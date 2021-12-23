@@ -7,8 +7,6 @@ using namespace std;
 
 // 股票涨跌数据 
 typedef struct changeData{
-	string stockCode;    //股票代码
-	string shortName;    //股票名称 
 	string date;         //日期
 	string openingPrice; //开盘价
 	string closingPrice; //收盘价
@@ -18,7 +16,7 @@ typedef struct changeData{
 	string turnover;     //成交额度
 	string turnoverRate; //换手率
 	string FZDE; 		 //跌涨额 
-	double changePercent;//跌涨幅
+	string changePercent;//跌涨幅
 	struct changeData* next;
 } changeData, *dataLink;
 // 股票 
@@ -41,12 +39,8 @@ typedef struct {
 	string majorBusiness;  //主营业务 
 	string businessScope;  //经营范围
 	string recentInfo[3];  //最近一日开盘价、收盘价和跌涨幅
-	dataLink detail;       //股票涨跌数据，首元结点
-	double score;          //评分
-	string maxChangePercent; //最大涨跌幅
-	string maxDate;        //最大涨跌幅对应的日期 
+	dataLink detail;       //股票涨跌数据，首元结点 
 } StockInfo;
-
 // 哈希节点 
 typedef struct _hashNode {
 	StockInfo node;
@@ -60,10 +54,10 @@ typedef struct TreeNode {
 } TNode, *BinTree;
 
 vector<hashList> hashTable(97);  //定义哈希表
-StockInfo stocks[200];   //存储200支股票的基本信息和具体股票信息 
+StockInfo stocks[200];           //存储200支股票的基本信息和最近一日具体股票基本信息 
 
 // 工具函数 
-int hashFun(string str);       //哈希函数
+int hashFun(string str);   //哈希函数
 bool kmp(string s, string t);  //KMP 
 
 // 功能入口 
@@ -76,13 +70,7 @@ void createBST(BinTree&); //创建二叉排序树
 void insertBST(BinTree&, int); //二叉排序树插入节点 
 BinTree searchBST(BinTree T, string key); //搜索指定股票代码
 void searchByLinkList();   //基于单链表的股票价格信息查询
-dataLink getLinkByDate(string date); //根据日期获取链表
-void analyseByInsertSort(); //通过插入排序来进行分析
-void sortByOpeningPrice(dataLink); //通过开盘价排序 
-void sortByClosingPrice(dataLink); //收盘价排序 
-void sortByChangePercent(dataLink); //涨跌幅排序 
-void analyseByQuickSort(); //通过快排进行分析
- 
+
 int main()
 {
 	readStockBaseInfo();   //读文件，保存数据 
@@ -96,8 +84,6 @@ int main()
 		cout << "=====      2. 基于KMP的股票网址查询            =====" << endl;
 		cout << "=====      3. 基于二叉排序树的股票基本信息查询 =====" << endl;
 		cout << "=====      4. 基于单链表的股票价格信息查询     =====" << endl;
-		cout << "=====      5. 基于直接插入排序的股票价格分析   =====" << endl;
-		cout << "=====      6. 基于快速排序的股票价格分析       =====" << endl;
 		cout << "====================================================" << endl;
 		
 		cout << "请输入您要进行的操作: ";
@@ -114,12 +100,6 @@ int main()
 				break;
 			case 4:
 				searchByLinkList();
-				break;
-			case 5:
-				analyseByInsertSort();
-				break;
-			case 6:
-				analyseByQuickSort();
 				break;
 		}
 	}
@@ -210,7 +190,7 @@ void readStockBaseInfo() {
 	 stocks[i].businessScope = lineArray[16];
 	 
 	 fullPath = path1 + lineArray[0] + path2;  //完整文件路径
-	
+	 cout << fullPath << endl;
 	 ifstream fp(fullPath);
 	 string line;
 	
@@ -237,7 +217,7 @@ void readStockBaseInfo() {
 	 head->turnover = arr[6];
 	 head->turnoverRate = arr[7];
 	 head->FZDE = arr[8];
-	 head->changePercent = stod(arr[9], 0);
+	 head->changePercent = arr[9];
 	 head->next = NULL;
 	 
 	 //读取txt文件，每一行都需要录入，这波终究是逃不开
@@ -256,16 +236,13 @@ void readStockBaseInfo() {
 		node->turnover = arr[6];
 		node->turnoverRate = arr[7];
 		node->FZDE = arr[8];
-		node->changePercent = stod(arr[9], 0);
+		node->changePercent = arr[9];
 		node->next = NULL;
 		
 		head->next = node;
 		head = head->next;
 	}
 	i++;
-	}
-	for(int i = 0; i < 200; i++) {
-		stocks[i].score = 0;
 	}
 }
 // 创建哈希表 
@@ -432,238 +409,12 @@ BinTree searchBST(BinTree T, string key) {
     else                                 //递归进入右子树查找
        return searchBST(T->right, key);
 }
-// 基于单链表的股票价格信息查询 
 void searchByLinkList() {
 	cout << "请输入要查询的日期：";
 	string date;
-	cin >> date;  
-	//录入成功！！！！！
-	 
-	dataLink link = getLinkByDate(date);
-	
-	cout << "股票代码" << "       " << "股票名称" << "      " << "开盘价" << "      " << "收盘价" << "      " << "涨跌幅" << endl;
-	link = link->next;
-	while(link) {
-		cout << link->stockCode << "      ";
-		cout << link->shortName << "      ";
-		cout << link->openingPrice << "      ";
-		cout << link->closingPrice << "      ";
-		cout << link->changePercent << endl;
-		link = link->next;
-	}
-	
+//	cin >> date;
+	cout << stocks[100].detail->date;
 }
-// 根绝日期获取所有股票该天的股票信息 
-dataLink getLinkByDate(string date) {
-	dataLink link = new changeData;
-	dataLink p = link; //游标 
-	
-	for(int i = 0; i < 200; i++) {
-		dataLink head = stocks[i].detail; //拿到首元结点啦！ 
-		while(head) {
-			if(head->date == date) {
-				dataLink node = new changeData;
-				node->stockCode = stocks[i].stockCode;
-				node->shortName = stocks[i].shortName;
-				node->openingPrice = head->openingPrice;
-				node->closingPrice = head->closingPrice;
-				node->changePercent = head->changePercent;
-				p->next = node;
-				p = p->next;
-				break;
-			}
-		}
-	}
-	
-	return link;
-}
-// 基于直接插入排血的股票价格分析
-void analyseByInsertSort() {
-	string date;
-	cout << "请输入查询日期："; 
-	cin >> date;
-	
-	dataLink link = getLinkByDate(date);
-	cout << "1. 根据开盘价排序" << endl;
-	cout << "2. 根据收盘价排序" << endl;
-	cout << "3. 根据涨跌幅排序" << endl;
-	cout << "请输入排序方式：";
-	int option;
-	cin >> option;
-	switch(option) {
-		case 1:
-			sortByOpeningPrice(link);
-			break;
-		case 2:
-			sortByClosingPrice(link);
-			break;
-		case 3:
-			sortByChangePercent(link);
-			break;
-	}
-}
-// 根据开盘价排序
-void sortByOpeningPrice(dataLink L) {
-	//https://blog.csdn.net/vv_017/article/details/80502837
-	dataLink p, pre, q;
-	p = L->next->next;		// 先保存下L的第二个元素，因为下一步要将L变成只有一个元素的有序表。  
-	L->next->next = NULL;	// 将L变成只有一个元素的有序表
-	// 从L的第二个元素开始遍历整个L直至表尾 
-	while(p != NULL){
-		q = p->next;
-		pre = L;	// 先用pre来保存L。
-		//https://blog.csdn.net/sinat_40872274/article/details/81367815
-		while(pre->next !=NULL && stod(pre->next->openingPrice, 0) > stod(p->openingPrice, 0)) // 遍历pre所指向的有序表L，直至找到比p大的节点 
-			pre = pre->next; 
-		p->next = pre->next;
-		pre->next = p;
-		p = q;	
-	}
-	int index = 1;
-	L = L->next;
-	ofstream outfile("价格和涨跌幅排序结果-开盘价降序.csv", ios::out);
-	outfile << "序号" << "," << "股票代码" << "," << "股票名称" << "," << "开盘价" << "," << "收盘价"
-	<< "," << "涨跌幅" << endl;
-	cout << "序号" << "      "<< "股票代码" << "       " << "股票名称" << "      " << "开盘价" << "      " << "收盘价" << "      " << "涨跌幅" << endl;
-	while(L) {
-		cout << index << "      ";
-	 	cout << L->stockCode << "      ";
-		cout << L->shortName << "      ";
-		cout << L->openingPrice << "      ";
-		cout << L->closingPrice << "      ";
-		cout << L->changePercent << endl;
-		outfile << index << "," << L->stockCode << "," << L->shortName << "," << L->openingPrice << ","
-		<< L->closingPrice << "," << L->changePercent << endl;
-		L = L->next;
-		index++;
-	}
-	outfile.close();
-}
-// 根据收盘价排序
-void sortByClosingPrice(dataLink L) {
-	dataLink p, pre, q;
-	p = L->next->next;		// 先保存下L的第二个元素，因为下一步要将L变成只有一个元素的有序表。  
-	L->next->next = NULL;	// 将L变成只有一个元素的有序表
-	// 从L的第二个元素开始遍历整个L直至表尾 
-	while(p != NULL){
-		q = p->next;
-		pre = L;	// 先用pre来保存L。
-		while(pre->next !=NULL && stod(pre->next->closingPrice, 0) > stod(p->closingPrice, 0)) // 遍历pre所指向的有序表L，直至找到比p大的节点 
-			pre = pre->next; 
-		p->next = pre->next;
-		pre->next = p;
-		p = q;	
-	}
-	int index = 1;
-	L = L->next;
-	ofstream outfile("价格和涨跌幅排序结果-收盘价降序.csv", ios::out);
-	outfile << "序号" << "," << "股票代码" << "," << "股票名称" << "," << "开盘价" << "," << "收盘价"
-	<< "," << "涨跌幅" << endl;
-	cout << "序号" << "      "<< "股票代码" << "       " << "股票名称" << "      " << "开盘价" << "      " << "收盘价" << "      " << "涨跌幅" << endl;
-	while(L) {
-		cout << index << "      ";
-	 	cout << L->stockCode << "      ";
-		cout << L->shortName << "      ";
-		cout << L->openingPrice << "      ";
-		cout << L->closingPrice << "      ";
-		cout << L->changePercent << endl;
-		outfile << index << "," << L->stockCode << "," << L->shortName << "," << L->openingPrice << ","
-		<< L->closingPrice << "," << L->changePercent << endl;
-		L = L->next;
-		index++;
-	}
-	outfile.close();
-}
-// 根据涨跌幅排序
-void sortByChangePercent(dataLink L) {
-	dataLink p, pre, q;
-	p = L->next->next;		// 先保存下L的第二个元素，因为下一步要将L变成只有一个元素的有序表。  
-	L->next->next = NULL;	// 将L变成只有一个元素的有序表
-	// 从L的第二个元素开始遍历整个L直至表尾 
-	while(p != NULL){
-		q = p->next;
-		pre = L;	// 先用pre来保存L。
-		while(pre->next !=NULL && pre->next->changePercent > p->changePercent) // 遍历pre所指向的有序表L，直至找到比p大的节点 
-			pre = pre->next; 
-		p->next = pre->next;
-		pre->next = p;
-		p = q;	
-	}
-	int index = 1;
-	L = L->next;
-	ofstream outfile("价格和涨跌幅排序结果-涨跌幅降序.csv", ios::out);
-	outfile << "序号" << "," << "股票代码" << "," << "股票名称" << "," << "开盘价" << "," << "收盘价"
-	<< "," << "涨跌幅" << endl;
-	cout << "序号" << "      "<< "股票代码" << "       " << "股票名称" << "      " << "开盘价" << "      " << "收盘价" << "      " << "涨跌幅" << endl;
-	while(L) {
-		cout << index << "      ";
-	 	cout << L->stockCode << "      ";
-		cout << L->shortName << "      ";
-		cout << L->openingPrice << "      ";
-		cout << L->closingPrice << "      ";
-		cout << L->changePercent << endl;
-		outfile << index << "," << L->stockCode << "," << L->shortName << "," << L->openingPrice << ","
-		<< L->closingPrice << "," << L->changePercent << endl;
-		L = L->next;
-		index++;
-	}
-	outfile.close();
-}
-// 基于快速排序的股票价格分析
-void analyseByQuickSort() {
-	ifstream in("股票基本信息数据/60支股票信息2.csv");
-	string row;
-	
-	getline(in, row);
-	getline(in, row);
-
-	while(getline(in, row)) {
-		stringstream ss(row);
-		string str;
-	
-		vector<string> arr;
-		while(getline(ss, str, ',')) arr.push_back(str);
-		
-		string code = arr[0];
-
-		for(int i = 0; i < 200; i++) {
-			if(stocks[i].stockCode == arr[0]) {
-				cout << arr[0] << endl;
-				stocks[i].score = stod(arr[2], 0);
-				break;
-			}
-		}
-	} //stocks[200]里面现在有评分了
-	
-	for(int i = 0; i < 200; i++) {
-		dataLink head = stocks[i].detail;
-		double maxChangePercent = head->changePercent;
-		string date;
-		while(head) {
-			if(maxChangePercent < head->changePercent) {
-				maxChangePercent = head->changePercent;
-				date = head->date;
-			}
-			head = head->next;
-		}
-		stocks[i].maxChangePercent = maxChangePercent;
-		stocks[i].date = date;
-	}
-	
-	string cate;
-	cout << "请输入一级行业：";
-	cin >> cate;
-	
-	vector<StockInfo> industry;  //该行业的股票 
-	
-	for(int i = 0; i < 200; i++) {
-		if(stocks[i].cate1 == cate ) {
-			industry.push_back(stocks[i]);
-			cout << stocks[i].score << endl;
-		}
-	}
-	
-} 
 
 
 
