@@ -43,10 +43,9 @@ typedef struct {
 	string recentInfo[3];  //最近一日开盘价、收盘价和跌涨幅
 	dataLink detail;       //股票涨跌数据，首元结点
 	double score;          //评分
-	string maxChangePercent; //最大涨跌幅
+	double maxChangePercent; //最大涨跌幅
 	string maxDate;        //最大涨跌幅对应的日期 
 } StockInfo;
-
 // 哈希节点 
 typedef struct _hashNode {
 	StockInfo node;
@@ -64,7 +63,8 @@ StockInfo stocks[200];   //存储200支股票的基本信息和具体股票信息
 
 // 工具函数 
 int hashFun(string str);       //哈希函数
-bool kmp(string s, string t);  //KMP 
+bool kmp(string s, string t);  //KMP
+string format(int number);     //格式化序号 
 
 // 功能入口 
 void readStockBaseInfo(); //读文件并存到数组中 
@@ -82,7 +82,10 @@ void sortByOpeningPrice(dataLink); //通过开盘价排序
 void sortByClosingPrice(dataLink); //收盘价排序 
 void sortByChangePercent(dataLink); //涨跌幅排序 
 void analyseByQuickSort(); //通过快排进行分析
- 
+void quickSort(vector<StockInfo>&, int, int); //快排 
+int partition(vector<StockInfo>& industry, int low, int high);
+void analyseBySelectionSort();  //基于简单选择排序的股票价格分析
+
 int main()
 {
 	readStockBaseInfo();   //读文件，保存数据 
@@ -98,6 +101,7 @@ int main()
 		cout << "=====      4. 基于单链表的股票价格信息查询     =====" << endl;
 		cout << "=====      5. 基于直接插入排序的股票价格分析   =====" << endl;
 		cout << "=====      6. 基于快速排序的股票价格分析       =====" << endl;
+		cout << "=====      7. 基于简单选择排序的股票价格分析   =====" << endl;
 		cout << "====================================================" << endl;
 		
 		cout << "请输入您要进行的操作: ";
@@ -121,6 +125,9 @@ int main()
 			case 6:
 				analyseByQuickSort();
 				break;
+			case 7:
+				analyseBySelectionSort();
+				break;
 		}
 	}
 	return 0;
@@ -135,6 +142,17 @@ int hashFun(string str) {
 	}
 	
 	return sum % 97;
+}
+// 返回字符串编码和 
+int encode(string str) {
+	int length = str.length();
+	int sum = 0;
+	
+	for(int i = 0; i < length; i++) {
+		sum += str[i];
+	}
+	
+	return sum;
 }
 // KMP
 bool kmp(string s, string t) {
@@ -172,6 +190,17 @@ bool kmp(string s, string t) {
         if(j<m) return false;  //j没走到最后，说明i走完了，j没走完 为匹配成功
 
         else return true;
+}
+//格式化序号 
+string format(int number) {
+	string ret;
+	if(number < 10) {
+		ret = "0" + to_string(number);
+	} else {
+		ret = to_string(number);
+	}
+	
+	return ret;
 }
 // 录入股票基本信息 
 void readStockBaseInfo() {
@@ -266,6 +295,41 @@ void readStockBaseInfo() {
 	}
 	for(int i = 0; i < 200; i++) {
 		stocks[i].score = 0;
+	}
+	ifstream infile("股票基本信息数据/60支股票信息2.csv");
+	string scope;
+	
+	getline(infile, scope);
+	getline(infile, scope);
+
+	while(getline(infile, scope)) {
+		stringstream ss(scope);
+		string str;
+	
+		vector<string> arr;
+		while(getline(ss, str, ',')) arr.push_back(str);
+
+		for(int i = 0; i < 200; i++) {
+			if(stocks[i].stockCode == arr[1]) {
+				stocks[i].score = stod(arr[2], 0);
+				break;
+			}
+		}
+	} //stocks[200]里面现在有评分了
+	
+	for(int i = 0; i < 200; i++) {
+		dataLink head = stocks[i].detail;
+		double maxChangePercent = head->changePercent;
+		string date;
+		while(head) {
+			if(maxChangePercent < head->changePercent) {
+				maxChangePercent = head->changePercent;
+				date = head->date;
+			}
+			head = head->next;
+		}
+		stocks[i].maxChangePercent = maxChangePercent;
+		stocks[i].date = date;
 	}
 }
 // 创建哈希表 
@@ -611,11 +675,57 @@ void sortByChangePercent(dataLink L) {
 }
 // 基于快速排序的股票价格分析
 void analyseByQuickSort() {
+	
+	string cate;
+	cout << "请输入一级行业：";
+	cin >> cate;
+	
+	vector<StockInfo> industry;  //该行业的股票
+	industry.push_back(stocks[0]);
+	
+	for(int i = 0; i < 200; i++) {
+		if(stocks[i].cate1 == cate && stocks[i].score > 0) {
+			industry.push_back(stocks[i]);
+		}
+	}
+	quickSort(industry, 1, industry.size()-1);
+	int n = industry.size();
+	for(int i = 1; i < n-1; i++) {
+		cout << i << "   " << industry[i].stockCode << "   " << industry[i].shortName << 
+		"   " << industry[i].maxChangePercent << "   " << industry[i].maxDate << endl;
+	}
+}
+void quickSort(vector<StockInfo> &industry, int low, int high) {
+	if(low < high) {
+		int pivitloc = partition(industry, low, high);
+		quickSort(industry, low, pivitloc-1);
+		quickSort(industry, pivitloc+1, high);
+	}
+}
+int partition(vector<StockInfo> &industry, int low, int high) {
+	industry[0] = industry[low];   
+	double pivotkey = industry[low].maxChangePercent;
+
+    while(low < high)
+	{ 
+	   while(low < high && industry[high].maxChangePercent < pivotkey )  
+	   	--high;
+       industry[low] = industry[high];
+       while (low < high && industry[low].maxChangePercent >= pivotkey )  
+	   	++low;
+       industry[high] = industry[low];
+    }
+    industry[low] = industry[0]; 
+    return low;
+}
+// 基于简单选择排序的股票价格分析
+void analyseBySelectionSort() {
 	ifstream in("股票基本信息数据/60支股票信息2.csv");
 	string row;
 	
 	getline(in, row);
 	getline(in, row);
+	vector<vector<string>> arr1;
 
 	while(getline(in, row)) {
 		stringstream ss(row);
@@ -623,47 +733,62 @@ void analyseByQuickSort() {
 	
 		vector<string> arr;
 		while(getline(ss, str, ',')) arr.push_back(str);
+		arr1.push_back(arr);
+	}  //读好数据放到 arr1 当中 
+	
+	int num = arr1.size();
+	for(int i = 0; i < num-1; i++) {
+		int k = i;
+		for(int j = i+1; j < num; j++) {
+			if(stod(arr1[j][2]) > stod(arr1[k][2])) k = j;
+		}
+		if(k != i) swap(arr1[i], arr1[k]);
+	}  //根据评分排序  OK！
+	 
+	vector<StockInfo> arr2;
+	for(int i = 0; i < 200; i++) {
+		if(stocks[i].score > 0)  arr2.push_back(stocks[i]);
+	}
+	
+	int n = arr2.size();
+	for(int i = 0; i < n-1; i++) {
+		int k = i;
+		for(int j = i+1; j < n; j++) {
+			if( stod(arr2[j].recentInfo[1]) > stod(arr2[k].recentInfo[1]) ) k = j;
+		}
+		if(k != i) swap(arr2[i], arr2[k]);
+	}  //根据收盘价排序  OK!
+	
+	cout << "序号" << "   " << "股票代码" << "   " << "股票名称" << "   " << "评分  " ;
+	cout << "序号" << "   " << "股票代码" << "   " << "股票名称" << "   " << "收盘价" << endl;
+	
+	ofstream scoreSort("评分排序.csv", ios::out);
+	scoreSort << "序号" << "," << "股票代码" << "," << "股票名称" << "," << "评分" << endl;
+	ofstream priceSort("收盘价排序.csv", ios::out);
+	priceSort << "序号" << "," << "股票代码" << "," << "股票名称" << "," << "收盘价" << endl;
+	
+	for(int i = 0; i < 60; i++) { 
+		cout << format(i+1) << "   " << arr1[i][0] << "   " << arr1[i][1] << "   " << arr1[i][2] << " |";
+		cout << format(i+1) << "   " << arr2[i].stockCode << "   " << arr2[i].shortName << "   " << arr2[i].recentInfo[1] << endl;
 		
-		string code = arr[0];
+		scoreSort << i+1 << "," << arr1[i][0] << "," << arr1[i][1] << "," << arr1[i][2] << endl;
+		priceSort << i+1 << "," << arr2[i].stockCode << "," << arr2[i].shortName << "," << arr2[i].recentInfo[1] << endl;
+	}
 
-		for(int i = 0; i < 200; i++) {
-			if(stocks[i].stockCode == arr[0]) {
-				cout << arr[0] << endl;
-				stocks[i].score = stod(arr[2], 0);
-				break;
-			}
-		}
-	} //stocks[200]里面现在有评分了
-	
-	for(int i = 0; i < 200; i++) {
-		dataLink head = stocks[i].detail;
-		double maxChangePercent = head->changePercent;
-		string date;
-		while(head) {
-			if(maxChangePercent < head->changePercent) {
-				maxChangePercent = head->changePercent;
-				date = head->date;
-			}
-			head = head->next;
-		}
-		stocks[i].maxChangePercent = maxChangePercent;
-		stocks[i].date = date;
-	}
-	
-	string cate;
-	cout << "请输入一级行业：";
-	cin >> cate;
-	
-	vector<StockInfo> industry;  //该行业的股票 
-	
-	for(int i = 0; i < 200; i++) {
-		if(stocks[i].cate1 == cate ) {
-			industry.push_back(stocks[i]);
-			cout << stocks[i].score << endl;
-		}
-	}
-	
-} 
+	scoreSort.close();
+	priceSort.close();
+}
+
+
+
+
+
+
+
+
+
+
+
 
 
 
