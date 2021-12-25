@@ -7,10 +7,7 @@ using namespace std;
 
 int main()
 {
-	string a = "122";
-	string b = "122";
-	
-	bool flag = a == b ? true : false;
-	
-	cout << flag;
+	string number = "7";
+	int num = stoi(number);
+	cout << num;
 }

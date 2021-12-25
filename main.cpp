@@ -3,7 +3,10 @@
 #include <vector>
 #include <fstream>
 #include <sstream>
+#include <algorithm>
 using namespace std;
+#define INF 0x3f3f3f3f
+#define N 60
 
 // 股票涨跌数据 
 typedef struct changeData {
@@ -57,9 +60,33 @@ typedef struct TreeNode {
 	TreeNode *left;
 	TreeNode *right;
 } TNode, *BinTree;
+// 边结构
+struct edge {
+	int v, w;
+};
+// 边结构，不需要邻接表 
+struct Edge {
+	int u, v, w;
+};
+// MST中的边以及连接两条边的点，即基金组合 
+struct fundPortfolio {
+	int fund1;
+	int fund2;
+	int weight;
+	int scoreSum;
+};
+struct score {
+	string name;
+	double score;
+};
 
 vector<hashList> hashTable(97);  //定义哈希表
-StockInfo stocks[200];   //存储200支股票的基本信息和具体股票信息 
+StockInfo stocks[200];           //存储200支股票的基本信息和具体股票信息
+vector<vector<edge>> e;          //邻接表 
+vector<int> d;                   //外部点到内部点的最短距离 
+vector<int> vis;                 //标记数组
+vector<fundPortfolio> ret;           //最小生成树当中的基金组合
+vector<score> scores;
 
 // 工具函数 
 int hashFun(string str);       //哈希函数
@@ -67,24 +94,30 @@ bool kmp(string s, string t);  //KMP
 string format(int number);     //格式化序号 
 
 // 功能入口 
-void readStockBaseInfo(); //读文件并存到数组中 
-void createHashTable();   //创建哈希表
-void searchBaseInfo();   //基于哈希搜索 
-void searchWebsite();    //基于KMP搜索网址
-void searchByBST();	     //基于二叉排序树查询
-void createBST(BinTree&); //创建二叉排序树
-void insertBST(BinTree&, int); //二叉排序树插入节点 
+void readStockBaseInfo();       //读文件并存到数组中 
+void createHashTable();         //创建哈希表
+void searchBaseInfo();          //基于哈希搜索 
+void searchWebsite();           //基于KMP搜索网址
+void searchByBST();	            //基于二叉排序树查询
+void createBST(BinTree&);       //创建二叉排序树
+void insertBST(BinTree&, int);  //二叉排序树插入节点 
 BinTree searchBST(BinTree T, string key); //搜索指定股票代码
-void searchByLinkList();   //基于单链表的股票价格信息查询
+void searchByLinkList();        //基于单链表的股票价格信息查询
 dataLink getLinkByDate(string date); //根据日期获取链表
-void analyseByInsertSort(); //通过插入排序来进行分析
+void analyseByInsertSort();     //通过插入排序来进行分析
 void sortByOpeningPrice(dataLink); //通过开盘价排序 
 void sortByClosingPrice(dataLink); //收盘价排序 
 void sortByChangePercent(dataLink); //涨跌幅排序 
-void analyseByQuickSort(); //通过快排进行分析
+void analyseByQuickSort();      //通过快排进行分析
 void quickSort(vector<StockInfo>&, int, int); //快排 
 int partition(vector<StockInfo>& industry, int low, int high);
 void analyseBySelectionSort();  //基于简单选择排序的股票价格分析
+void analyseByFloyd();          //基于Floyd的股票相关性计算
+void analyseByPrim();           //基于Prim最小生成树的股票基金筛选
+void analyseByBigraph();        //基于二部图的股票基金筛选
+void deleteBST(){}              //基于二叉排序树的股票基本信息删除
+void anylyseByKruskal();        //基于Kruskal最小生成树的股票基金筛选
+void MST();                     //最小生成树-普利姆算法
 
 int main()
 {
@@ -95,19 +128,19 @@ int main()
 		cout << "=====================================================" << endl;
 		cout << "=====   欢迎使用股票查询与分析系统 V1.0        =====" << endl;
 		cout << "=====      请输入您要执行的操作                =====" << endl;
-		cout << "=====    1. 基于哈希表的股票基本信息查询       =====" << endl;
-		cout << "=====    2. 基于KMP的股票网址查询              =====" << endl;
-		cout << "=====    3. 基于二叉排序树的股票基本信息查询   =====" << endl;
-		cout << "=====    4. 基于单链表的股票价格信息查询       =====" << endl;
-		cout << "=====    5. 基于直接插入排序的股票价格分析     =====" << endl;
-		cout << "=====    6. 基于快速排序的股票价格分析         =====" << endl;
-		cout << "=====    7. 基于简单选择排序的股票价格分析     =====" << endl;
-		cout << "=====    8. 基于Floyd的股票相关性计算          =====" << endl;
-		cout << "=====    9. 基于Prim最小生成树的股票基金筛选   =====" << endl;
-		cout << "=====    10.基于二部图的股票基金筛选           =====" << endl;
-		cout << "=====    11.基于Kruskal最小生成树的股票基金筛选=====" << endl;
-		cout << "=====    12.基于二叉排序树的股票基本信息删除   =====" << endl;
-		cout << "====================================================" << endl;
+		cout << "=====     1. 基于哈希表的股票基本信息查询       =====" << endl;
+		cout << "=====     2. 基于KMP的股票网址查询              =====" << endl;
+		cout << "=====     3. 基于二叉排序树的股票基本信息查询   =====" << endl;
+		cout << "=====     4. 基于单链表的股票价格信息查询       =====" << endl;
+		cout << "=====     5. 基于二叉排序树的股票基本信息删除   =====" << endl;
+		cout << "=====     6. 基于直接插入排序的股票价格分析     =====" << endl;
+		cout << "=====     7. 基于快速排序的股票价格分析         =====" << endl;
+		cout << "=====     8. 基于简单选择排序的股票价格分析     =====" << endl;
+		cout << "=====     9. 基于Floyd的股票相关性计算          =====" << endl;
+		cout << "=====    10. 基于Prim最小生成树的股票基金筛选   =====" << endl;
+		cout << "=====    11. 基于Kruskal最小生成树的股票基金筛选=====" << endl;
+		cout << "=====    12. 基于二部图的股票基金筛选           =====" << endl;
+		cout << "=====================================================" << endl;
 		
 		cout << "请输入您要进行的操作: ";
 		cin >> choice;
@@ -125,16 +158,29 @@ int main()
 				searchByLinkList();
 				break;
 			case 5:
-				analyseByInsertSort();
+				deleteBST();
 				break;
 			case 6:
-				analyseByQuickSort();
+				analyseByInsertSort();
 				break;
 			case 7:
-				analyseBySelectionSort();
+				analyseByQuickSort();
 				break;
 			case 8:
-				 
+				analyseBySelectionSort();
+				break;
+			case 9:
+				analyseByFloyd();
+				break;
+			case 10:
+				analyseByPrim();
+				break;
+			case 11:
+				anylyseByKruskal();
+				break;
+			case 12:
+				analyseByBigraph();
+				break;	
 		}
 	}
 	return 0;
@@ -209,6 +255,16 @@ string format(int number) {
 	
 	return ret;
 }
+// 权值排序规则
+bool cmp(const fundPortfolio t1, const fundPortfolio t2) {
+	if(t1.weight < t2.weight) return true;
+	return false;
+} 
+// 总评分 
+bool cmpByScores(const fundPortfolio t1, const fundPortfolio t2) {
+	if(t1.scoreSum > t2.scoreSum) return true;
+	return false;
+} 
 // 录入股票基本信息 
 void readStockBaseInfo() {
  	ifstream in("股票基本信息数据/A股公司简介.csv");   //读取文件 
@@ -298,7 +354,7 @@ void readStockBaseInfo() {
 		head->next = node;
 		head = head->next;
 	}
-	i++;
+		i++;
 	}
 	for(int i = 0; i < 200; i++) {
 		stocks[i].score = 0;
@@ -308,14 +364,22 @@ void readStockBaseInfo() {
 	
 	getline(infile, scope);
 	getline(infile, scope);
-
+	
+	score scoreNode;
+	scores.push_back(scoreNode);
+		
 	while(getline(infile, scope)) {
 		stringstream ss(scope);
 		string str;
 	
 		vector<string> arr;
 		while(getline(ss, str, ',')) arr.push_back(str);
-
+		
+		score scoreNode;
+		scoreNode.name = arr[0];
+		scoreNode.score = stod(arr[2], 0);
+		scores.push_back(scoreNode);
+		
 		for(int i = 0; i < 200; i++) {
 			if(stocks[i].stockCode == arr[1]) {
 				stocks[i].score = stod(arr[2], 0);
@@ -785,9 +849,168 @@ void analyseBySelectionSort() {
 	scoreSort.close();
 	priceSort.close();
 }
-// 
+// 基于Floyd的股票相关性计算
+void analyseByFloyd() {	
+	vector<vector<int>> graph(N+1, vector<int>(N+1, 0)); //60只股票邻接矩阵 
+	for(int i = 1; i <= N; i++)
+		for(int j = 1; j <= N; j++) {
+			graph[i][j] = INF;   //无穷
+		} 
+			
+	for(int i = 1; i <= N; i++) {
+		graph[i][i] = 0; 
+	} 	//初始化邻接矩阵 
+	
+	ifstream in("股票基本信息数据/60支股票信息1.csv");
+	string row;
+	getline(in, row);
+	
+	while(getline(in, row)) {
+		stringstream ss(row);
+		string str;
+		
+		vector<string> arr;
+		while(getline(ss, str, ',')) arr.push_back(str);
+		//https://chinese.freecodecamp.org/news/string-to-int-in-c-how-to-convert-a-string-to-an-integer-example/
+		int dot1 = stoi(arr[0]);
+		int dot2 = stoi(arr[1]);
+		int dis = stoi(arr[2]);
+		graph[dot1][dot2] = dis;
+		graph[dot2][dot1] = dis;
+	}
+	
+	for(int k = 1; k <= N; k++) {
+		for(int i = 1; i <= N; i++) {
+			for(int j = 1; j <= N; j++) {
+				if(graph[i][k] + graph[k][j] < graph[i][j])
+					graph[i][j] = graph[i][k] + graph[k][j];
+			}
+		}
+	}
+	
+	cout << "请依次输入两个数字，分别表示图中两个节点：";
+	int node1, node2;
+	while(cin >> node1 >> node2) {
+		cout << "最短路径为" << graph[node1][node2] << endl;
+	}
+}
+// 基于Prim最小生成树的股票基金筛选
+void analyseByPrim() {
+	vis.assign(N+1, false);
+	d.assign(N+1, INF);
+	e.resize(N+1);
+	
+	ifstream in("股票基本信息数据/60支股票信息1.csv");
+	string row;
+	getline(in, row);
+	
+	while(getline(in, row)) {
+		stringstream ss(row);
+		string str;
+		
+		vector<string> arr;
+		while(getline(ss, str, ',')) arr.push_back(str);
+		//字符串转整数 https://chinese.freecodecamp.org/news/string-to-int-in-c-how-to-convert-a-string-to-an-integer-example/
+		int dot1 = stoi(arr[0]);
+		int dot2 = stoi(arr[1]);
+		int dis = stoi(arr[2]);
+		
+		e[dot1].push_back({dot2, dis});
+		e[dot2].push_back({dot1, dis});
+	}
+	MST();   //这时最小生成树已经生成了
+	
+	sort(ret.begin(), ret.end(), cmp);
+	int num = ret.size();
+	
+	cout << "边的权值：" << ret[1].weight << " 边的结点1：" <<  scores[ret[1].fund1].name << " 边的结点2：" << scores[ret[1].fund2].name << endl;
 
-
+	vector<fundPortfolio> arr; //权值为2的 
+	for(int i = 0; i <= num; i++) {
+		if(ret[i].weight == 2) arr.push_back(ret[i]);
+	}
+	
+	int n = arr.size();
+	for(int i = 0; i < n; i++) {
+		arr[i].scoreSum = scores[arr[i].fund1].score + scores[arr[i].fund2].score;
+	}
+	sort(arr.begin(), arr.end(), cmpByScores);
+	
+	cout << "边的权值：" << arr[0].weight << " 边的结点1：" <<  scores[arr[0].fund1].name << " 边的结点2：" << scores[arr[0].fund2].name << endl;
+	cout << "边的权值：" << arr[1].weight << " 边的结点1：" <<  scores[arr[1].fund1].name << " 边的结点2：" << scores[arr[1].fund2].name << endl;
+}
+// Prim 朴素算法 
+void MST() {
+	d[1] = 0;   //最开始内部是一个空集
+	int fund1 = 0;
+	int fund2 = 0;
+	
+	//每一轮选一条内部到外部最小的边 
+	for(int i = 1; i <= N; i++) {
+		int min = INF;
+		
+		for(int k = 1; k <= N; k++) {
+			if(!vis[k] && d[k] < min) {
+				min = d[k];
+				fund2 = k;
+			}
+		}
+		
+		for(int k = 1; k <= N; k++) {
+			if(vis[k]) {
+				int n = e[k].size();
+				for(int j = 0; j < n; j++) {
+					if(e[k][j].w == min && e[k][j].v == fund2) fund1 = k;
+				}
+			}
+		}
+		
+		vis[fund2] = 1;
+		
+		for(const edge& item : e[fund2]) {
+			int v = item.v, w = item.w;
+			d[v] = d[v] < w ? d[v] : w;
+		}
+		
+		struct fundPortfolio funds;
+		funds.fund1 = fund1;
+		funds.fund2 = fund2;
+		funds.weight = min;
+		
+		ret.push_back(funds);
+	}
+}
+// 基于Kruskal最小生成树的股票基金筛选
+void anylyseByKruskal() {
+	vector<Edge> es;
+		
+	ifstream in("股票基本信息数据/60支股票信息1.csv");
+	string row;
+	getline(in, row);
+	
+	while(getline(in, row)) {
+		stringstream ss(row);
+		string str;
+		
+		vector<string> arr;
+		while(getline(ss, str, ',')) arr.push_back(str);
+		//字符串转整数 https://chinese.freecodecamp.org/news/string-to-int-in-c-how-to-convert-a-string-to-an-integer-example/
+		int dot1 = stoi(arr[0]);
+		int dot2 = stoi(arr[1]);
+		int dis = stoi(arr[2]);
+		
+		es.push_back({dot1, dot2, dis});
+	}
+	sort(es.begin(), es.end(), [](const Edge& x, const Edge& y) {
+                return x.w < y.w;
+    });
+    int m = es.size();
+    
+    
+}
+// 基于二部图的股票基金筛选
+void analyseByBigraph() {
+}
 
 
 
