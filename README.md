@@ -1,18 +1,3 @@
-读取文件并保存数据
-
-cout << "=======     1. 基于哈希表的股票基本信息查询          =======" << endl;
-		cout << "=======     2. 基于KMP的股票网址查询                 =======" << endl;
-		cout << "=======     3. 基于二叉排序树的股票基本信息查询      =======" << endl;
-		cout << "=======     4. 基于单链表的股票价格信息查询          =======" << endl;
-		cout << "=======     5. 基于二叉排序树的股票基本信息删除      =======" << endl;
-		cout << "=======     6. 基于直接插入排序的股票价格分析        =======" << endl;
-		cout << "=======     7. 基于快速排序的股票价格分析            =======" << endl;
-		cout << "=======     8. 基于简单选择排序的股票价格分析        =======" << endl;
-		cout << "=======     9. 基于Floyd的股票相关性计算             =======" << endl;
-		cout << "=======    10. 基于Prim最小生成树的股票基金筛选      =======" << endl;
-		cout << "=======    11. 基于Kruskal最小生成树的股票基金筛选   =======" << endl;
-		cout << "=======    12. 基于二部图的股票基金筛选              =======" << endl;
-
 
 
 200条股票信息和哈希表下标都是从0开始的
@@ -26,4 +11,16 @@ hashTable[i].next 才是第一个真实节点
 二叉排序树
 
  https://www.cnblogs.com/linfangnan/p/12958068.html
+
+直接插入排序
+
+https://blog.csdn.net/vv_017/article/details/80502837
+
+
+
+https://blog.csdn.net/sinat_40872274/article/details/81367815
+
+字符串转整数
+
+https://chinese.freecodecamp.org/news/string-to-int-in-c-how-to-convert-a-string-to-an-integer-example/
 

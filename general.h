@@ -39,6 +39,7 @@ void insertBST(BinTree&, int, vector<StockInfo>);            //¶ş²æÅÅĞòÊ÷²åÈë½Úµ
 BinTree searchBST(BinTree T, string key,double&); //ËÑË÷Ö¸¶¨¹ÉÆ±´úÂë
 void searchByLinkList();                  //»ùÓÚµ¥Á´±íµÄ¹ÉÆ±¼Û¸ñĞÅÏ¢²éÑ¯
 dataLink getLinkByDate(string date);      //¸ù¾İÈÕÆÚ»ñÈ¡Á´±í
+
 void analyseByInsertSort();               //Í¨¹ı²åÈëÅÅĞòÀ´½øĞĞ·ÖÎö
 void sortByOpeningPrice(dataLink);        //Í¨¹ı¿ªÅÌ¼ÛÅÅĞò 
 void sortByClosingPrice(dataLink);        //ÊÕÅÌ¼ÛÅÅĞò 
@@ -53,4 +54,11 @@ void analyseByBigraph();                  //»ùÓÚ¶ş²¿Í¼µÄ¹ÉÆ±»ù½ğÉ¸Ñ¡
 void deleteBST(){}                        //»ùÓÚ¶ş²æÅÅĞòÊ÷µÄ¹ÉÆ±»ù±¾ĞÅÏ¢É¾³ı
 void anylyseByKruskal();                  //»ùÓÚKruskal×îĞ¡Éú³ÉÊ÷µÄ¹ÉÆ±»ù½ğÉ¸Ñ¡
 void MST();                               //×îĞ¡Éú³ÉÊ÷-ÆÕÀûÄ·Ëã
-int find(int x);                          //²¢²é¼¯²éÕÒ 
+int find(int x);                          //²¢²é¼¯²éÕÒ
+void deleteBSTNode();                     //É¾³ı¶ş²æÅÅĞòÊ÷½Úµã¹¦ÄÜÈë¿Ú
+BinTree deleteBST(BinTree& BST, string str, BinTree& ret); //É¾³ı½Úµã 
+BinTree FindMin(BinTree BST);              //Ñ°ÕÒ×îĞ¡Öµ
+void printResult(BinTree);             //´òÓ¡ĞÂ½Úµã£¬×óÓÒ½ÚµãĞÅÏ¢ 
+ 
+
+

@@ -1,8 +1,7 @@
 #include "general.h"
 
 vector<hashList> hashTable(HASHLENGTH);  //定义哈希表
-//StockInfo stocks[SIZE];                  //存储200支股票的基本信息和具体股票信息
-vector<StockInfo> stocks(200);
+vector<StockInfo> stocks(200);           //存储200支股票的基本信息和具体股票信息
 vector<vector<edge>> e;                  //邻接表 
 vector<int> d;                           //外部点到内部点的最短距离 
 vector<int> vis;                         //标记数组
@@ -186,7 +185,55 @@ void showSearchMenu() {
 	}
 }
 void showAnalyseMenu() {
-	
+	bool flag = true;
+	while(flag) {
+		system("cls");
+		cout << "============================================================" << endl;
+		cout << "=======     1. 基于直接插入排序的股票价格分析        =======" << endl;
+  		cout << "=======     2. 基于快速排序的股票价格分析            =======" << endl;
+  		cout << "=======     3. 基于简单选择排序的股票价格分析        =======" << endl;
+  		cout << "=======     4. 基于Floyd的股票相关性计算             =======" << endl;
+  		cout << "=======     5. 基于Prim最小生成树的股票基金筛选      =======" << endl;
+		cout << "=======     6. 基于二部图的股票基金筛选              =======" << endl;
+		cout << "=======     7. 基于Kruskal最小生成树的股票基金筛选   =======" << endl;
+		cout << "=======     8. 基于二叉排序树的股票基本信息删除      =======" << endl;
+  		cout << "=======     9. 返回上级菜单                          =======" << endl;
+  		cout << "============================================================" << endl;
+  		cout << endl;
+  		
+  		cout << "请输入您要执行的功能：";
+  		int opt;  
+		cin >> opt;
+  		switch(opt) {
+  			case 1:
+  				analyseByInsertSort();
+  				break;
+  			case 2:
+  				analyseByQuickSort();
+  				break;
+  			case 3:
+  				analyseBySelectionSort();
+  				break;
+  			case 4:
+  				analyseByFloyd();
+  				break;
+  			case 5:
+  				analyseByPrim();
+  				break;
+  			case 6:
+  				analyseByBigraph();
+  				break;
+  			case 7:
+  				anylyseByKruskal();
+  				break;
+  			case 8:
+  				deleteBSTNode();
+  				break;
+  			case 9:
+  				flag = false;
+  				break;
+		}
+	}
 }
 
 // 功能实现 
@@ -308,7 +355,7 @@ void readStockInfo() {
 			head = head->next;
 		}
 		stocks[i].maxChangePercent = maxChangePercent;
-		stocks[i].date = date;
+		stocks[i].maxDate = date;
 	}
 }
 // 创建哈希表 
@@ -596,63 +643,94 @@ dataLink getLinkByDate(string date) {
 	
 	return link;
 }
+
 // 基于直接插入排血的股票价格分析
 void analyseByInsertSort() {
-	string date;
-	cout << "请输入查询日期："; 
-	cin >> date;
+	int isExit = 0;
 	
-	dataLink link = getLinkByDate(date);
-	cout << "1. 根据开盘价排序" << endl;
-	cout << "2. 根据收盘价排序" << endl;
-	cout << "3. 根据涨跌幅排序" << endl;
-	cout << "请输入排序方式：";
-	int option;
-	cin >> option;
-	switch(option) {
-		case 1:
-			sortByOpeningPrice(link);
-			break;
-		case 2:
-			sortByClosingPrice(link);
-			break;
-		case 3:
-			sortByChangePercent(link);
-			break;
+	while(!isExit) {
+		string date;
+		cout << "请输入查询日期："; 
+		cin >> date;
+		
+		dataLink link = getLinkByDate(date);
+		
+		if(!link->next) {
+			cout << "该日数据不存在！" << endl;
+		} 
+		else {
+			cout << "1. 根据开盘价排序" << endl;
+			cout << "2. 根据收盘价排序" << endl;
+			cout << "3. 根据涨跌幅排序" << endl;
+			cout << "请输入排序方式：";
+			int option;
+			cin >> option;
+			switch(option) {
+				case 1:
+					sortByOpeningPrice(link);
+					break;
+				case 2:
+					sortByClosingPrice(link);
+					break;
+				case 3:
+					sortByChangePercent(link);
+					break;
+			}
+		}
+		
+		int isBreak = 0;
+		while(!isBreak) {
+			cout << "请确认是否继续(yes/no): ";
+			string isGo;
+			cin >> isGo;
+			if(isGo == "no") {
+				isExit = 1;
+				isBreak = 1;
+			}
+			else if(isGo == "yes") {
+				break;
+			}
+			else cout << "输入不合法，请重新输入！" << endl;
+		}	
 	}
 }
 // 根据开盘价排序
 void sortByOpeningPrice(dataLink L) {
-	//https://blog.csdn.net/vv_017/article/details/80502837
 	dataLink p, pre, q;
-	p = L->next->next;		// 先保存下L的第二个元素，因为下一步要将L变成只有一个元素的有序表。  
-	L->next->next = NULL;	// 将L变成只有一个元素的有序表
-	// 从L的第二个元素开始遍历整个L直至表尾 
-	while(p != NULL){
+	p = L->next->next;		 // 先保存下L的第二个元素，因为下一步要将L变成只有一个元素的有序表。  
+	L->next->next = NULL;	 // 将L变成只有一个元素的有序表
+	
+   // 从L的第二个元素开始遍历整个L直至表尾 
+	while(p){
 		q = p->next;
-		pre = L;	// 先用pre来保存L。
-		//https://blog.csdn.net/sinat_40872274/article/details/81367815
+		pre = L;	// 先用pre来保存L
+		
 		while(pre->next !=NULL && stod(pre->next->openingPrice, 0) > stod(p->openingPrice, 0)) // 遍历pre所指向的有序表L，直至找到比p大的节点 
 			pre = pre->next; 
 		p->next = pre->next;
 		pre->next = p;
 		p = q;	
 	}
+	
 	int index = 1;
 	L = L->next;
 	ofstream outfile("价格和涨跌幅排序结果-开盘价降序.csv", ios::out);
 	outfile << "序号" << "," << "股票代码" << "," << "股票名称" << "," << "开盘价" << "," << "收盘价"
 	<< "," << "涨跌幅" << endl;
-	cout << "序号" << "      "<< "股票代码" << "       " << "股票名称" << "      " << "开盘价" << "      " << "收盘价" << "      " << "涨跌幅" << endl;
+	printf("%-4s%-10s%-10s%-10s%-10s%-10s\n", "序号", "股票代码", "股票名称", "开盘价", "收盘价", "涨跌幅");
+	
 	while(L) {
-		cout << index << "      ";
-	 	cout << L->stockCode << "      ";
-		cout << L->shortName << "      ";
-		cout << L->openingPrice << "      ";
-		cout << L->closingPrice << "      ";
-		cout << L->changePercent << endl;
+		printf("%-4d", index);
+		printf("%-10s", L->stockCode.c_str());
+		printf("%-10s", L->shortName.c_str());
+		printf("%-10s", L->openingPrice.c_str());
+		printf("%-10s", L->closingPrice.c_str());
+		printf("%-10f", L->changePercent);
+		printf("\n");
+		
 		outfile << index << "," << L->stockCode << "," << L->shortName << "," << L->openingPrice << ","
 		<< L->closingPrice << "," << L->changePercent << endl;
+		
 		L = L->next;
 		index++;
 	}
@@ -661,10 +739,11 @@ void sortByOpeningPrice(dataLink L) {
 // 根据收盘价排序
 void sortByClosingPrice(dataLink L) {
 	dataLink p, pre, q;
-	p = L->next->next;		// 先保存下L的第二个元素，因为下一步要将L变成只有一个元素的有序表。  
-	L->next->next = NULL;	// 将L变成只有一个元素的有序表
+	p = L->next->next;		 // 先保存下L的第二个元素，因为下一步要将L变成只有一个元素的有序表。  
+	L->next->next = NULL;	 // 将L变成只有一个元素的有序表
+	
 	// 从L的第二个元素开始遍历整个L直至表尾 
-	while(p != NULL){
+	while(p){
 		q = p->next;
 		pre = L;	// 先用pre来保存L。
 		while(pre->next !=NULL && stod(pre->next->closingPrice, 0) > stod(p->closingPrice, 0)) // 遍历pre所指向的有序表L，直至找到比p大的节点 
@@ -673,21 +752,26 @@ void sortByClosingPrice(dataLink L) {
 		pre->next = p;
 		p = q;	
 	}
+	
 	int index = 1;
 	L = L->next;
 	ofstream outfile("价格和涨跌幅排序结果-收盘价降序.csv", ios::out);
 	outfile << "序号" << "," << "股票代码" << "," << "股票名称" << "," << "开盘价" << "," << "收盘价"
 	<< "," << "涨跌幅" << endl;
-	cout << "序号" << "      "<< "股票代码" << "       " << "股票名称" << "      " << "开盘价" << "      " << "收盘价" << "      " << "涨跌幅" << endl;
+	printf("%-4s%-10s%-10s%-10s%-10s%-10s\n", "序号", "股票代码", "股票名称", "开盘价", "收盘价", "涨跌幅");
+	 
 	while(L) {
-		cout << index << "      ";
-	 	cout << L->stockCode << "      ";
-		cout << L->shortName << "      ";
-		cout << L->openingPrice << "      ";
-		cout << L->closingPrice << "      ";
-		cout << L->changePercent << endl;
+		printf("%-4d", index);
+		printf("%-10s", L->stockCode.c_str());
+		printf("%-10s", L->shortName.c_str());
+		printf("%-10s", L->openingPrice.c_str());
+		printf("%-10s", L->closingPrice.c_str());
+		printf("%-10f", L->changePercent);
+		printf("\n");
+		
 		outfile << index << "," << L->stockCode << "," << L->shortName << "," << L->openingPrice << ","
 		<< L->closingPrice << "," << L->changePercent << endl;
+		
 		L = L->next;
 		index++;
 	}
@@ -698,8 +782,9 @@ void sortByChangePercent(dataLink L) {
 	dataLink p, pre, q;
 	p = L->next->next;		// 先保存下L的第二个元素，因为下一步要将L变成只有一个元素的有序表。  
 	L->next->next = NULL;	// 将L变成只有一个元素的有序表
+	
 	// 从L的第二个元素开始遍历整个L直至表尾 
-	while(p != NULL){
+	while(p){
 		q = p->next;
 		pre = L;	// 先用pre来保存L。
 		while(pre->next !=NULL && pre->next->changePercent > p->changePercent) // 遍历pre所指向的有序表L，直至找到比p大的节点 
@@ -708,19 +793,23 @@ void sortByChangePercent(dataLink L) {
 		pre->next = p;
 		p = q;	
 	}
+	
 	int index = 1;
 	L = L->next;
 	ofstream outfile("价格和涨跌幅排序结果-涨跌幅降序.csv", ios::out);
 	outfile << "序号" << "," << "股票代码" << "," << "股票名称" << "," << "开盘价" << "," << "收盘价"
 	<< "," << "涨跌幅" << endl;
-	cout << "序号" << "      "<< "股票代码" << "       " << "股票名称" << "      " << "开盘价" << "      " << "收盘价" << "      " << "涨跌幅" << endl;
+	
+	printf("%-4s%-10s%-10s%-10s%-10s%-10s\n", "序号", "股票代码", "股票名称", "开盘价", "收盘价", "涨跌幅");
 	while(L) {
-		cout << index << "      ";
-	 	cout << L->stockCode << "      ";
-		cout << L->shortName << "      ";
-		cout << L->openingPrice << "      ";
-		cout << L->closingPrice << "      ";
-		cout << L->changePercent << endl;
+		printf("%-4d", index);
+		printf("%-10s", L->stockCode.c_str());
+		printf("%-10s", L->shortName.c_str());
+		printf("%-10s", L->openingPrice.c_str());
+		printf("%-10s", L->closingPrice.c_str());
+		printf("%-10f", L->changePercent);
+		printf("\n");
+		
 		outfile << index << "," << L->stockCode << "," << L->shortName << "," << L->openingPrice << ","
 		<< L->closingPrice << "," << L->changePercent << endl;
 		L = L->next;
@@ -730,24 +819,44 @@ void sortByChangePercent(dataLink L) {
 }
 // 基于快速排序的股票价格分析
 void analyseByQuickSort() {
+	int isExit = 0;
 	
-	string cate;
-	cout << "请输入一级行业：";
-	cin >> cate;
-	
-	vector<StockInfo> industry;  //该行业的股票
-	industry.push_back(stocks[0]);
-	
-	for(int i = 0; i < 200; i++) {
-		if(stocks[i].cate1 == cate && stocks[i].score > 0) {
-			industry.push_back(stocks[i]);
+	while(!isExit) {
+		string cate;
+		cout << "请输入一级行业：";
+		cin >> cate;
+		
+		vector<StockInfo> industry;    //该行业的股票
+		industry.push_back(stocks[0]); //随便push一个进去 
+		
+		for(int i = 0; i < 200; i++) {
+			if(stocks[i].cate1 == cate && stocks[i].score > 0) {
+				industry.push_back(stocks[i]);
+			}
 		}
-	}
-	quickSort(industry, 1, industry.size()-1);
-	int n = industry.size();
-	for(int i = 1; i < n-1; i++) {
-		cout << i << "   " << industry[i].stockCode << "   " << industry[i].shortName << 
-		"   " << industry[i].maxChangePercent << "   " << industry[i].maxDate << endl;
+		quickSort(industry, 1, industry.size()-1);
+		int n = industry.size();
+		
+		
+		for(int i = 1; i < n; i++) {
+			cout << i << "   " << industry[i].stockCode << "   " << industry[i].shortName << 
+			"   " << industry[i].maxChangePercent << "   " << industry[i].maxDate << endl;
+		}
+		
+		int isBreak = 0;
+		while(!isBreak) {
+			cout << "请确认是否继续(yes/no): ";
+			string isGo;
+			cin >> isGo;
+			if(isGo == "no") {
+				isExit = 1;
+				isBreak = 1;
+			}
+			else if(isGo == "yes") {
+				break;
+			}
+			else cout << "输入不合法，请重新输入！" << endl;
+		}	
 	}
 }
 void quickSort(vector<StockInfo> &industry, int low, int high) {
@@ -814,24 +923,47 @@ void analyseBySelectionSort() {
 		if(k != i) swap(arr2[i], arr2[k]);
 	}  //根据收盘价排序  OK!
 	
-	cout << "序号" << "   " << "股票代码" << "   " << "股票名称" << "   " << "评分  " ;
-	cout << "序号" << "   " << "股票代码" << "   " << "股票名称" << "   " << "收盘价" << endl;
 	
-	ofstream scoreSort("评分排序.csv", ios::out);
-	scoreSort << "序号" << "," << "股票代码" << "," << "股票名称" << "," << "评分" << endl;
-	ofstream priceSort("收盘价排序.csv", ios::out);
-	priceSort << "序号" << "," << "股票代码" << "," << "股票名称" << "," << "收盘价" << endl;
-	
-	for(int i = 0; i < 60; i++) { 
-		cout << format(i+1) << "   " << arr1[i][0] << "   " << arr1[i][1] << "   " << arr1[i][2] << " |";
-		cout << format(i+1) << "   " << arr2[i].stockCode << "   " << arr2[i].shortName << "   " << arr2[i].recentInfo[1] << endl;
+	int isExit = 0;
+	while(!isExit) {
+		printf("%-5s%-10s%-10s%-10s", "序号", "股票代码", "股票名称", "评分");
+		printf("%-5s%-10s%-10s%-10s\n", "序号", "股票代码", "股票名称", "收盘价");
 		
-		scoreSort << i+1 << "," << arr1[i][0] << "," << arr1[i][1] << "," << arr1[i][2] << endl;
-		priceSort << i+1 << "," << arr2[i].stockCode << "," << arr2[i].shortName << "," << arr2[i].recentInfo[1] << endl;
-	}
-
-	scoreSort.close();
-	priceSort.close();
+		ofstream scoreSort("评分排序.csv", ios::out);
+		scoreSort << "序号" << "," << "股票代码" << "," << "股票名称" << "," << "评分" << endl;
+		ofstream priceSort("收盘价排序.csv", ios::out);
+		priceSort << "序号" << "," << "股票代码" << "," << "股票名称" << "," << "收盘价" << endl;
+		
+		for(int i = 0; i < 60; i++) {
+			printf("%-5d", i+1); 
+			printf("%-10s", arr1[i][0].c_str());
+			printf("%-10s", arr1[i][1].c_str());
+			printf("%-10s", arr1[i][2].c_str());
+			cout << "|";
+			printf("%-5d", i+1); 
+			printf("%-10s", arr2[i].stockCode.c_str());
+			printf("%-10s", arr2[i].shortName.c_str());
+			printf("%-10s", arr2[i].recentInfo[1].c_str());
+			cout << endl;
+			
+			scoreSort << i+1 << "," << arr1[i][0] << "," << arr1[i][1] << "," << arr1[i][2] << endl;
+			priceSort << i+1 << "," << arr2[i].stockCode << "," << arr2[i].shortName << "," << arr2[i].recentInfo[1] << endl;
+		}
+	
+		scoreSort.close();
+		priceSort.close();
+		
+		int isBreak = 0;
+		while(!isBreak) {
+			cout << "输入任意内容以继续 ";
+			string isGo;
+			cin >> isGo;
+			if(isGo!="") {
+				isExit = 1;
+				isBreak = 1;
+			}
+		}	
+	}	
 }
 // 基于Floyd的股票相关性计算
 void analyseByFloyd() {	
@@ -855,7 +987,7 @@ void analyseByFloyd() {
 		
 		vector<string> arr;
 		while(getline(ss, str, ',')) arr.push_back(str);
-		//https://chinese.freecodecamp.org/news/string-to-int-in-c-how-to-convert-a-string-to-an-integer-example/
+		
 		int dot1 = stoi(arr[0]);
 		int dot2 = stoi(arr[1]);
 		int dis = stoi(arr[2]);
@@ -872,10 +1004,28 @@ void analyseByFloyd() {
 		}
 	}
 	
-	cout << "请依次输入两个数字，分别表示图中两个节点：";
-	int node1, node2;
-	while(cin >> node1 >> node2) {
+	int isExit = 0;
+	
+	while(!isExit) {
+		cout << "请依次输入两个数字，分别表示图中两个节点：";
+		int node1, node2;
+		cin >> node1 >> node2;
 		cout << "最短路径为" << graph[node1][node2] << endl;
+			
+		int isBreak = 0;
+		while(!isBreak) {
+			cout << "请确认是否继续(yes/no): ";
+			string isGo;
+			cin >> isGo;
+			if(isGo == "no") {
+				isExit = 1;
+				isBreak = 1;
+			}
+			else if(isGo == "yes") {
+				break;
+			}
+			else cout << "输入不合法，请重新输入！" << endl;
+		}	
 	}
 }
 // 基于Prim最小生成树的股票基金筛选
@@ -922,6 +1072,10 @@ void analyseByPrim() {
 	
 	cout << "边的权值：" << arr[0].weight << " 边的结点1：" <<  scores[arr[0].fund1].name << " 边的结点2：" << scores[arr[0].fund2].name << endl;
 	cout << "边的权值：" << arr[1].weight << " 边的结点1：" <<  scores[arr[1].fund1].name << " 边的结点2：" << scores[arr[1].fund2].name << endl;
+	
+	cout << "输入任意内容以继续 ";
+	string isGo;
+	cin >> isGo;
 }
 // Prim 朴素算法 
 void MST() {
@@ -1026,10 +1180,100 @@ void anylyseByKruskal() {
 	
 	cout << "边的权值：" << arr[0].weight << " 边的结点1：" <<  scores[arr[0].fund1].name << " 边的结点2：" << scores[arr[0].fund2].name << endl;
 	cout << "边的权值：" << arr[1].weight << " 边的结点1：" <<  scores[arr[1].fund1].name << " 边的结点2：" << scores[arr[1].fund2].name << endl;
+	
+	cout << "输入任意内容以继续 ";
+	string isGo;
+	cin >> isGo;
 }
 // 基于二部图的股票基金筛选
 void analyseByBigraph() {
 	
+}
+// 删除二叉排序树节点功能入口
+void deleteBSTNode() {
+	BinTree T = NULL;
+	createBST(T, stocks); //创建完毕
+	
+	cout << "请输入要删除的股票代码：";
+	string toDelete;
+	cin >> toDelete;
+	
+	BinTree ret = NULL;
+	BinTree node = deleteBST(T, toDelete, ret);
+	printResult(ret);
+	
+	cout << "输入任意内容以继续 ";
+	string isGo;
+	cin >> isGo;
+}
+// 删除节点
+BinTree deleteBST(BinTree& BST, string str, BinTree& ret) {
+	BinTree ptr;
+ 
+    if (BST == NULL)  //要删除的结点不存在
+    	cout << "Not Found\n" << endl; 
+	 
+    else {					                  //要删除的结点存在
+		if (str == BST->data.stockCode) {     //找到了要删除的结点
+            if (BST->left && BST->right)      //左右子树都存在
+            {
+                ptr = FindMin(BST->right);    //选择右子树的最小结点
+                BST->data = ptr->data;        //用右子树的最小结点取代被删除结点
+                BST->right = deleteBST(BST->right, BST->data.stockCode, ret);      //删除原来的右子树的最小结点
+            }
+            else                              //结点的子树存在空树
+            {
+                if (BST->left == NULL)        //结点的左子树为空树(此时可能右结点也是空树)
+                    BST = BST->right;
+                else                          //结点的右子树为空树
+                    BST = BST->left;
+            }
+            ret = BST;
+	    }
+	    //递归进入左子树查找删除结点
+        else if(str < BST->data.stockCode) {
+        	BST->left = deleteBST(BST->left, str, ret);
+		}
+		//递归进入右子树查找删除结点
+        else {
+        	BST->right = deleteBST(BST->right, str, ret);
+		}
+    }
+    
+    return BST;
+}
+// 查找最小值
+BinTree FindMin(BinTree BST) {
+    if (BST != NULL) {
+        while (BST->left)      //沿着左子树向下挖掘
+            BST = BST->left;
+    }
+    
+    return BST;
+}
+// 打印最新节点和左右节点信息 
+void printResult(BinTree node) {
+	cout << "当前新节点为: " << endl;
+	cout << node->data.shortName << "   " << node->data.stockCode << "   " << node->data.recentInfo[0] 
+	<< "   " << node->data.recentInfo[1] << "   " << node->data.recentInfo[2] << endl << endl;
+	
+	if(node->left) {
+		cout << "左孩子为：" << endl;
+		cout << node->left->data.shortName << "   " << node->left->data.stockCode << "   " 
+		<< node->left->data.recentInfo[0] << "   " << node->left->data.recentInfo[1] << "   " 
+		<< node->data.recentInfo[2] << endl << endl;
+	}
+
+	else cout << "不存在左孩子" << endl << endl;
+	
+	if(node->right) {
+		cout << "右孩子为：" << endl;
+		cout << node->right->data.shortName << "   " << node->right->data.stockCode << "   " 
+		<< node->right->data.recentInfo[0] << "   " << node->right->data.recentInfo[1] << "   " 
+		<< node->right->data.recentInfo[2] << endl << endl;
+	}
+	
+	else cout << "不存在右孩子" << endl << endl;
 }
 
 
