@@ -1,46 +1,84 @@
 #include "general.h"
 
 vector<hashList> hashTable(HASHLENGTH);  //定义哈希表
-//StockInfo stocks[SIZE];                  //存储200支股票的基本信息和具体股票信息
-vector<StockInfo> stocks(200);
+StockInfo stocks[SIZE];                  //存储200支股票的基本信息和具体股票信息
 vector<vector<edge>> e;                  //邻接表 
 vector<int> d;                           //外部点到内部点的最短距离 
 vector<int> vis;                         //标记数组
 vector<fundPortfolio> ret;               //最小生成树当中的基金组合
 vector<score> scores;                    //评分和名字
-vector<int> p;                           //并查集数组 
+vector<int> p;                           //并查集数组
 
 int main()
 {
 	readStockInfo();   //读文件，保存数据 
-	string choice;
+	int choice;
 
 	while(true) {
-		system("cls");
-		cout << "============================================================" << endl;
-		cout << "=======      欢迎使用股票查询与分析系统 V2.0         =======" << endl;
-		cout << "=======                                              =======" << endl;
-		cout << "=======              1. 查询功能                     =======" << endl;
-		cout << "=======              2. 分析功能                     =======" << endl;
-		cout << "=======              3. 退出系统                     =======" << endl;
-		cout << "=======                                              =======" << endl;
-		cout << "============================================================" << endl;
+		cout << "=====================================================" << endl;
+		cout << "=====   欢迎使用股票查询与分析系统 V1.0        =====" << endl;
+		cout << "=====      请输入您要执行的操作                =====" << endl;
+		cout << "=====     1. 基于哈希表的股票基本信息查询       =====" << endl;
+		cout << "=====     2. 基于KMP的股票网址查询              =====" << endl;
+		cout << "=====     3. 基于二叉排序树的股票基本信息查询   =====" << endl;
+		cout << "=====     4. 基于单链表的股票价格信息查询       =====" << endl;
+		cout << "=====     5. 基于二叉排序树的股票基本信息删除   =====" << endl;
+		cout << "=====     6. 基于直接插入排序的股票价格分析     =====" << endl;
+		cout << "=====     7. 基于快速排序的股票价格分析         =====" << endl;
+		cout << "=====     8. 基于简单选择排序的股票价格分析     =====" << endl;
+		cout << "=====     9. 基于Floyd的股票相关性计算          =====" << endl;
+		cout << "=====    10. 基于Prim最小生成树的股票基金筛选   =====" << endl;
+		cout << "=====    11. 基于Kruskal最小生成树的股票基金筛选=====" << endl;
+		cout << "=====    12. 基于二部图的股票基金筛选           =====" << endl;
+		cout << "=====================================================" << endl;
 		
-		cout << "请输入您要进行的操作(输入不合法内容将重新刷新页面): ";
+		cout << "请输入您要进行的操作: ";
 		cin >> choice;
-		
-		if(choice == "1") showSearchMenu();
-		else if(choice == "2") showAnalyseMenu();
-		else if(choice == "3") {
-			cout << endl;
-			cout << "欢迎下次使用！退出中...." << endl;
-			exit(0);
+		switch(choice) {
+			case 1:
+				searchBaseInfo();
+				break;
+			case 2:
+				searchWebsite();
+				break;
+			case 3:
+				searchByBST();
+				break;
+			case 4:
+				searchByLinkList();
+				break;
+			case 5:
+				deleteBST();
+				break;
+			case 6:
+				analyseByInsertSort();
+				break;
+			case 7:
+				analyseByQuickSort();
+				break;
+			case 8:
+				analyseBySelectionSort();
+				break;
+			case 9:
+				analyseByFloyd();
+				break;
+			case 10:
+				analyseByPrim();
+				break;
+			case 11:
+				anylyseByKruskal();
+				break;
+			case 12:
+				analyseByBigraph();
+				break;	
 		}
 	}
 	return 0;
 }
 
+
 // 工具函数 
+// 哈希函数 
 int hashFun(string str) {
 	int length = str.length();
 	int sum = 0;
@@ -51,36 +89,7 @@ int hashFun(string str) {
 	
 	return sum % 97;
 }
-double hashASL(vector<StockInfo> info, vector<hashList> list) {
-	int num = info.size();
-	double counter = 0;
-	
-	for(int i = 0; i < num; i++) {
-		string name = info[i].stockCode;
-		int index = hashFun(name);
-		
-		hashList stockNode = list[index]->next;
-		counter++;
-		
-		while(stockNode) {
-			if(stockNode->node.stockCode == name)  break;
-			stockNode = stockNode->next;
-			counter++;
-		}
-	}
-	return counter/SIZE;
-}
-double bstASL(BinTree T, vector<StockInfo> info) {
-	int num = info.size();
-	
-	double counter = 0;
-	for(int i = 0; i < num; i++) {
-		string code = info[i].stockCode;
-		searchBST(T, code, counter);
-	}
-	
-	return counter / num;
-}
+// 返回字符串编码和 
 int encode(string str) {
 	int length = str.length();
 	int sum = 0;
@@ -91,6 +100,7 @@ int encode(string str) {
 	
 	return sum;
 }
+// KMP
 bool kmp(string s, string t) {
 	int m = t.length();
         int n = s.length();
@@ -127,6 +137,7 @@ bool kmp(string s, string t) {
 
         else return true;
 }
+//格式化序号 
 string format(int number) {
 	string ret;
 	if(number < 10) {
@@ -137,59 +148,22 @@ string format(int number) {
 	
 	return ret;
 }
+// 权值排序规则
 bool cmp(const fundPortfolio t1, const fundPortfolio t2) {
 	if(t1.weight < t2.weight) return true;
 	return false;
 } 
+// 总评分 
 bool cmpByScores(const fundPortfolio t1, const fundPortfolio t2) {
 	if(t1.scoreSum > t2.scoreSum) return true;
 	return false;
 } 
+// 并查集查找
 int find(int x) {
 	return x = p[x] ? x : p[x] = find(p[x]);
 }
 
-// 功能入口
-void showSearchMenu() {
-	bool flag = true;
-	while(flag) {
-		system("cls");
-		cout << "============================================================" << endl;
-		cout << "=======     1. 基于哈希表的股票基本信息查询          =======" << endl;
-  		cout << "=======     2. 基于KMP的股票网址查询                 =======" << endl;
-  		cout << "=======     3. 基于二叉排序树的股票基本信息查询      =======" << endl;
-  		cout << "=======     4. 基于单链表的股票价格信息查询          =======" << endl;
-  		cout << "=======     5. 返回上级菜单                          =======" << endl;
-  		cout << "============================================================" << endl;
-  		cout << endl;
-  		
-  		cout << "请输入您要执行的功能：";
-  		int opt;  
-		cin >> opt;
-  		switch(opt) {
-  			case 1:
-  				searchBaseInfo();
-  				break;
-  			case 2:
-  				searchWebsite();
-  				break;
-  			case 3:
-  				searchByBST();
-  				break;
-  			case 4:
-  				searchByLinkList();
-  				break;
-  			case 5:
-  				flag = false;
-  				break;
-		}
-	}
-}
-void showAnalyseMenu() {
-	
-}
-
-// 功能实现 
+// 功能入口 
 // 录入股票基本信息 
 void readStockInfo() {
  	ifstream in("股票基本信息数据/A股公司简介.csv");   //读取文件, 定义文件流 
@@ -212,19 +186,29 @@ void readStockInfo() {
 	 
 	 stocks[i].stockCode = lineArray[0];
 	 stocks[i].shortName = lineArray[1];
+	 stocks[i].industryCode = lineArray[2];
 	 stocks[i].cate1 = lineArray[3];
 	 stocks[i].cate2 = lineArray[4];
+	 stocks[i].exchange = lineArray[5];
+	 stocks[i].fullName = lineArray[6];
 	 stocks[i].date = lineArray[7];
+	 stocks[i].province = lineArray[8];
+	 stocks[i].city = lineArray[9];
+	 stocks[i].legalPerson = lineArray[10];
+	 stocks[i].location = lineArray[11];
 	 stocks[i].website = lineArray[12];
+	 stocks[i].email = lineArray[13];
+	 stocks[i].phone = lineArray[14];
 	 stocks[i].majorBusiness = lineArray[15];
 	 stocks[i].businessScope = lineArray[16];
 	 
 	 fullPath = path1 + lineArray[0] + path2;  //完整文件路径
+	
 	 ifstream fp(fullPath);
 	 string line;
 	
 	 getline(fp, line);  //跳过第一行
-	 getline(fp, line);  //正式读取, 这里是只读最近一日的 
+	 getline(fp, line);  //正式读取
 	 
 	 vector<string> arr;
 	 istringstream s(line);
@@ -240,40 +224,50 @@ void readStockInfo() {
 	 head->date = arr[0];
 	 head->openingPrice = arr[1];
 	 head->closingPrice = arr[2];
+	 head->highestPrice = arr[3];
+	 head->lowestPrice = arr[4];
+	 head->volume = arr[5];
+	 head->turnover = arr[6];
+	 head->turnoverRate = arr[7];
+	 head->FZDE = arr[8];
 	 head->changePercent = stod(arr[9], 0);
 	 head->next = NULL;
 	 
-	//读取txt文件，每一行都需要录入，终究是逃不开
-	 while(getline(fp, line)) {
-		 vector<string> arr;
-		 istringstream s(line);
-	 	 while(getline(s, str, ' '))  arr.push_back(str);
+	 //读取txt文件，每一行都需要录入，这波终究是逃不开
+	while(getline(fp, line)) {
+		vector<string> arr;
+		istringstream s(line);
+	 	while(getline(s, str, ' '))  arr.push_back(str);
 	 	
-	 	 dataLink node = new changeData;
-	 	 node->date = arr[0];
-		 node->openingPrice = arr[1];
-		 node->closingPrice = arr[2];
-		 node->changePercent = stod(arr[9], 0);
-		 node->next = NULL;
+	 	dataLink node = new changeData;
+	 	node->date = arr[0];
+		node->openingPrice = arr[1];
+		node->closingPrice = arr[2];
+		node->highestPrice = arr[3];
+		node->lowestPrice = arr[4];
+		node->volume = arr[5];
+		node->turnover = arr[6];
+		node->turnoverRate = arr[7];
+		node->FZDE = arr[8];
+		node->changePercent = stod(arr[9], 0);
+		node->next = NULL;
 		
-		 head->next = node;
-		 head = head->next;
-	 }
-	 i++;
+		head->next = node;
+		head = head->next;
 	}
-	
+		i++;
+	}
 	for(int i = 0; i < 200; i++) {
 		stocks[i].score = 0;
 	}
-	
 	ifstream infile("股票基本信息数据/60支股票信息2.csv");
 	string scope;
 	
 	getline(infile, scope);
-	getline(infile, scope);   //跳过前两行 
+	getline(infile, scope);
 	
 	score scoreNode;
-	scores.push_back(scoreNode);  // 目的是让下标从1开始 
+	scores.push_back(scoreNode);
 		
 	while(getline(infile, scope)) {
 		stringstream ss(scope);
@@ -293,9 +287,8 @@ void readStockInfo() {
 				break;
 			}
 		}
-	}   //stocks[200]里面现在有评分了
+	} //stocks[200]里面现在有评分了
 	
-	// 最大涨跌幅和对应的日期 
 	for(int i = 0; i < 200; i++) {
 		dataLink head = stocks[i].detail;
 		double maxChangePercent = head->changePercent;
@@ -313,27 +306,33 @@ void readStockInfo() {
 }
 // 创建哈希表 
 void createHashTable() {
-	//初始化哈希表
-	for(int i = 0; i < HASHLENGTH; i++) {
-		hashTable[i] = new hashNode;  //这里记得new  成功！！！！！ 
-		hashTable[i]->next = NULL;  
-	}
-	
-	for(int i = 0; i < SIZE; i++) {
+	for(int i = 0; i < 200; i++) {
 		string str = stocks[i].stockCode;   //哈希函数核心代码 
 		int index = hashFun(str);
 		
-		if(!hashTable[index]->next) {       //不存在
+		cout << index << str << endl;
+		
+		if(!hashTable[index]->next) {  //不存在 
 			hashList insertNode = new hashNode;
 			
 			insertNode->node.stockCode = stocks[i].stockCode;
 			insertNode->node.shortName = stocks[i].shortName;
+			insertNode->node.industryCode = stocks[i].industryCode;
 			insertNode->node.cate1 = stocks[i].cate1;
 			insertNode->node.cate2 = stocks[i].cate2;
+			insertNode->node.exchange = stocks[i].exchange;
+			insertNode->node.fullName = stocks[i].fullName;
 			insertNode->node.date = stocks[i].date;
+			insertNode->node.province = stocks[i].province;
+			insertNode->node.city = stocks[i].city;
+			insertNode->node.legalPerson = stocks[i].legalPerson;
+			insertNode->node.location = stocks[i].location;
 			insertNode->node.website = stocks[i].website;
+			insertNode->node.email = stocks[i].email;
+			insertNode->node.phone = stocks[i].phone;
 			insertNode->node.majorBusiness = stocks[i].majorBusiness;
 			insertNode->node.businessScope = stocks[i].businessScope;
+			
 			insertNode->next = NULL;
 			
 			hashTable[index]->next = insertNode;
@@ -345,10 +344,19 @@ void createHashTable() {
 
 			insertNode->node.stockCode = stocks[i].stockCode;
 			insertNode->node.shortName = stocks[i].shortName;
+			insertNode->node.industryCode = stocks[i].industryCode;
 			insertNode->node.cate1 = stocks[i].cate1;
 			insertNode->node.cate2 = stocks[i].cate2;
+			insertNode->node.exchange = stocks[i].exchange;
+			insertNode->node.fullName = stocks[i].fullName;
 			insertNode->node.date = stocks[i].date;
+			insertNode->node.province = stocks[i].province;
+			insertNode->node.city = stocks[i].city;
+			insertNode->node.legalPerson = stocks[i].legalPerson;
+			insertNode->node.location = stocks[i].location;
 			insertNode->node.website = stocks[i].website;
+			insertNode->node.email = stocks[i].email;
+			insertNode->node.phone = stocks[i].phone;
 			insertNode->node.majorBusiness = stocks[i].majorBusiness;
 			insertNode->node.businessScope = stocks[i].businessScope;
 			
@@ -359,18 +367,27 @@ void createHashTable() {
 }
 // 哈希查找基本信息
 void searchBaseInfo() {
+	//初始化哈希表
+	for(int i = 0; i < 97; i++) {
+		hashTable[i] = new hashNode;  //这里记得new  成功！！！！！ 
+		hashTable[i]->next = NULL;  
+	}
+	
 	createHashTable();
+	cout << hashTable[31]->node.shortName << 123;
 	
 	string number;
-	int flag1 = 1;
+	int flag = 1;
 	
 	cout << "请输入您要查询的股票代码（例如：cn_600519）：";
 	
-	while(flag1 && cin >> number) {
+	while(cin>>number && flag) {
+		cout << number << endl;
 		int index = hashFun(number);
 		
-		if(!hashTable[index]->next) {
-			cout << "不存在该股票！" << endl;
+		if(hashTable[index]->next == NULL) {
+			cout << "不存在该股票，请重新输入！";
+			cout << "请输入您要查询的股票代码（例如：cn_600519）：";
 		} 
 		else {
 			hashList stockNode = hashTable[index]->next;
@@ -382,121 +399,52 @@ void searchBaseInfo() {
 					cout << "一级行业：" << stockNode->node.cate1 << endl;
 					cout << "二级行业：" << stockNode->node.cate2 << endl;
 					cout << "主营业务：" << stockNode->node.majorBusiness << endl;
-					flag1 = 0;
+					flag = 0;
 					break;
 				}
 				stockNode = stockNode->next;
 			}
-			if(!flag1) cout << "查找成功的ASL为：" << hashASL(stocks, hashTable) << endl;
-			else cout << "不存在该股票，请重新输入" << endl;
 		}
-		
-		int isBreak = 0;
-		while(!isBreak) {
-			cout << "请确认是否继续查找(yes/no): ";
-			string isGo;
-			cin >> isGo;
-			if(isGo == "no") {
-				flag1 = 0;
-				isBreak = 1;
-			}
-			else if(isGo == "yes") {
-				cout << "请输入您要查询的股票代码（例如：cn_600519）：";
-				break;
-			}
-			else cout << "输入不合法，请重新输入！" << endl;
-		}	
 	}
 } 
 // KMP网址查找
 void searchWebsite() {
-	int isExit = 0;
+	cout << "请输入网址关键字: ";
+	string keywords;
+	cin >> keywords;
+	int flag = 1;
 	
-	while(!isExit) {
-		cout << "请输入网址关键字: ";
-		string keywords;
-		cin >> keywords;
-		
-		int flag = 0;
-		
-		for(int i = 0; i < SIZE; i++) {
-			if(kmp(stocks[i].website, keywords)) {
-				cout << "匹配成功！\n\n"; 
-				cout << "股票名称：" << stocks[i].shortName << "   " << " 股票代码：" << 
-				stocks[i].stockCode << endl << endl;
-				flag = 1;
-				break;
-			}
+	for(int i = 0; i < 200; i++) {
+		if(kmp(stocks[i].website, keywords)) {
+			cout << stocks[i].shortName << " " << stocks[i].stockCode << endl;
+			flag = 0;
+			break;
 		}
-		
-		if(!flag) cout << "抱歉，暂无该网址相关信息" << endl;
-		
-		int isBreak = 0;
-		while(!isBreak) {
-			cout << "请确认是否继续查找(yes/no): ";
-			string isGo;
-			cin >> isGo;
-			if(isGo == "no") {
-				isExit = 1;
-				isBreak = 1;
-			}
-			else if(isGo == "yes") {
-				cout << "请输入网址关键字：";
-				break;
-			}
-			else cout << "输入不合法，请重新输入！" << endl;
-		}	
-	}	
+	}
 }
 // 基于二叉排序树查询 
 void searchByBST() {
+	// https://www.cnblogs.com/linfangnan/p/12958068.html
 	BinTree T = NULL;
-	
-	createBST(T, stocks);
+	createBST(T);
 	// 创建完毕！
-	
-	int isExit = 0;
-	while(!isExit) {
-		string toSearch;
-		cout << "请输入要查询的股票代码：";
-		cin >> toSearch;
-		
-		double times = 0;
-		BinTree node = searchBST(T, toSearch, times);
-		if(!node) {    //返回为空 
-			cout << "查询失败，不存在该股票！" << endl;
-		} else {
-			cout << "最近一日股票信息如下：" << endl; 
-			cout << "开盘价 " << node->data.recentInfo[0] << endl;
-			cout << "收盘价 " << node->data.recentInfo[1] << endl;
-			cout << "涨跌幅 " << node->data.recentInfo[2] << endl;
-			cout << "查找成功的ASL为" << bstASL(T, stocks) << endl;
-		}
-		
-		int isBreak = 0;
-		while(!isBreak) {
-			cout << "请确认是否继续查找(yes/no): ";
-			string isGo;
-			cin >> isGo;
-			if(isGo == "no") {
-				isExit = 1;
-				isBreak = 1;
-			}
-			else if(isGo == "yes") {
-				break;
-			}
-			else cout << "输入不合法，请重新输入！" << endl;
-		}	
-	}
+	string toSearch;
+	cout << "请输入要查询的股票代码：";
+	cin >> toSearch;
+	BinTree node = searchBST(T, toSearch);
+	cout << "最近一日股票信息如下：" << endl; 
+	cout << "开盘价 " << node->data.recentInfo[0] << endl;
+	cout << "收盘价 " << node->data.recentInfo[1] << endl;
+	cout << "涨跌幅 " << node->data.recentInfo[2] << endl;
 }
 // 创建BST
-void createBST(BinTree &T, vector<StockInfo> stocksInfo) {
-	for(int i = 0; i < SIZE; i++) {
-		insertBST(T, i, stocksInfo);  // i是第几个
+void createBST(BinTree &T) {
+	for(int i = 0; i < 200; i++) {
+		insertBST(T, i);  // i是第几个
 	}
 }
 // 插入节点 
-void insertBST(BinTree& root, int i, vector<StockInfo> stocksInfo) {
+void insertBST(BinTree& root, int i) {
 	if(!root) {  // 叶子结点 
 		root = new TNode;
 		root->data = stocks[i];
@@ -505,78 +453,48 @@ void insertBST(BinTree& root, int i, vector<StockInfo> stocksInfo) {
 	}
 	else {
 		if(stocks[i].stockCode < root->data.stockCode) {
-			insertBST(root->left, i, stocksInfo);
+			insertBST(root->left, i);
 		} else if(stocks[i].stockCode > root->data.stockCode) {
-			insertBST(root->right, i, stocksInfo);
+			insertBST(root->right, i);
 		}
 	}
 }
 // 根据股票代码在二叉排序树上搜索
-BinTree searchBST(BinTree T, string key, double& times) {
-	if(T == NULL || key == T->data.stockCode){
-		times++;
-		return T;
-	}
-    else if(key < T->data.stockCode) {  //递归进入左子树查找
-    	times++;
-    	return searchBST(T->left, key, times);
-	}        
-    else {							    //递归进入右子树查找
-    	times++;
-		return searchBST(T->right, key, times);
-	}                                     
+BinTree searchBST(BinTree T, string key) {
+	if(T == NULL || key == T->data.stockCode)
+       return T;
+    else if(key < T->data.stockCode)      //递归进入左子树查找
+       return searchBST(T->left, key);
+    else                                 //递归进入右子树查找
+       return searchBST(T->right, key);
 }
 // 基于单链表的股票价格信息查询 
 void searchByLinkList() {
-	int isExit = 0;
+	cout << "请输入要查询的日期：";
+	string date;
+	cin >> date;  
+	//录入成功！！！！！
+	 
+	dataLink link = getLinkByDate(date);
 	
-	while(!isExit) {
-		cout << "请输入要查询的日期：";
-		string date;
-		cin >> date;
-		
-		dataLink link = getLinkByDate(date);
-	
-		if(!link->next) cout << "该日数据不存在！" << endl;
-		
-		else {
-			link = link->next;
-			printf("%-10s%-10s%-10s%-10s%-10s\n", "股票代码", "股票名称", "开盘价", "收盘价", "涨跌幅");
-			
-			while(link) {
-				printf("%-10s", link->stockCode.c_str());
-				printf("%-10s", link->shortName.c_str());
-				printf("%-10s", link->openingPrice.c_str());
-				printf("%-10s", link->closingPrice.c_str());
-				printf("%-10f", link->changePercent);
-				printf("\n");
-				link = link->next;
-			}	
-		}
-		
-		int isBreak = 0;
-		while(!isBreak) {
-			cout << "请确认是否继续查找(yes/no): ";
-			string isGo;
-			cin >> isGo;
-			if(isGo == "no") {
-				isExit = 1;
-				isBreak = 1;
-			}
-			else if(isGo == "yes") {
-				break;
-			}
-			else cout << "输入不合法，请重新输入！" << endl;
-		}	
+	cout << "股票代码" << "       " << "股票名称" << "      " << "开盘价" << "      " << "收盘价" << "      " << "涨跌幅" << endl;
+	link = link->next;
+	while(link) {
+		cout << link->stockCode << "      ";
+		cout << link->shortName << "      ";
+		cout << link->openingPrice << "      ";
+		cout << link->closingPrice << "      ";
+		cout << link->changePercent << endl;
+		link = link->next;
 	}
+	
 }
-// 根据日期获取所有股票该天的股票信息 
+// 根绝日期获取所有股票该天的股票信息 
 dataLink getLinkByDate(string date) {
 	dataLink link = new changeData;
-	link->next = NULL;
 	dataLink p = link; //游标 
 	
-	for(int i = 0; i < SIZE; i++) {
+	for(int i = 0; i < 200; i++) {
 		dataLink head = stocks[i].detail; //拿到首元结点啦！ 
 		while(head) {
 			if(head->date == date) {
@@ -590,7 +508,6 @@ dataLink getLinkByDate(string date) {
 				p = p->next;
 				break;
 			}
-			head = head->next;
 		}
 	}
 	

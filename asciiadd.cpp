@@ -1,13 +1,13 @@
 #include <iostream>
 #include <string>
-#include <vector>
-#include <fstream>
-#include <sstream>
 using namespace std;
 
 int main()
 {
-	string number = "7";
-	int num = stoi(number);
-	cout << num;
+	printf("股票代码%-10s");
+	printf("股票代码%-10s");
+	printf("股票名称%-10s");
+	printf("开盘价%-10s");
+		
+	return 0;
 }
