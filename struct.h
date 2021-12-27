@@ -12,7 +12,7 @@ typedef struct changeData {
 	double changePercent;//跌涨幅
 	struct changeData* next;
 } changeData, *dataLink;
-// 股票 
+// 股票信息 
 typedef struct {
 	string stockCode;      //股票代码 
 	string shortName;	   //股票简称 

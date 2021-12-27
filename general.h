@@ -58,7 +58,6 @@ int find(int x);                          //并查集查找
 void deleteBSTNode();                     //删除二叉排序树节点功能入口
 BinTree deleteBST(BinTree& BST, string str, BinTree& ret); //删除节点 
 BinTree FindMin(BinTree BST);              //寻找最小值
-void printResult(BinTree);             //打印新节点，左右节点信息 
- 
-
-
+void printResult(BinTree);             //打印新节点，左右节点信息
+void showBestStocks(vector<int> arr1, vector<int> arr2); //展示二部图最佳股票组合 
+bool solve(vector<int> v);             //二部图 

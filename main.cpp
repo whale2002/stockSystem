@@ -8,6 +8,8 @@ vector<int> vis;                         //标记数组
 vector<fundPortfolio> ret;               //最小生成树当中的基金组合
 vector<score> scores;                    //评分和名字
 vector<int> p;                           //并查集数组 
+vector<int> G[SIZE];                     //图
+int color[SIZE];                         //顶点i的颜色 1 或 -1
 
 int main()
 {
@@ -1181,13 +1183,106 @@ void anylyseByKruskal() {
 	cout << "边的权值：" << arr[0].weight << " 边的结点1：" <<  scores[arr[0].fund1].name << " 边的结点2：" << scores[arr[0].fund2].name << endl;
 	cout << "边的权值：" << arr[1].weight << " 边的结点1：" <<  scores[arr[1].fund1].name << " 边的结点2：" << scores[arr[1].fund2].name << endl;
 	
-	cout << "输入任意内容以继续 ";
-	string isGo;
-	cin >> isGo;
+	system("pause");
+}
+// 把顶点染成1或-1
+bool dfs(int v, int c) {
+    color[v] = c; // 把顶点v染成颜色c
+    
+    for (int i = 0; i < G[v].size(); i++) {
+        if (color[G[v][i]] == c) return false;
+        if (color[G[v][i]] == 0 && !dfs(G[v][i], -c)) return false;
+    }
+    
+    return true;
+}
+bool solve(vector<int> v) {
+    for (int i = 0; i < 10; i++) {
+    	int num = v[i];
+        if (color[num] == 0) {
+            if (!dfs(num, 1)) {
+                return false;
+            }
+        }
+    }
+    return true;
 }
 // 基于二部图的股票基金筛选
 void analyseByBigraph() {
+	e.resize(N+1);
 	
+	ifstream in("股票基本信息数据/60支股票信息1.csv");
+	string row;
+	getline(in, row);
+	
+	while(getline(in, row)) {
+		stringstream ss(row);
+		string str;
+		
+		vector<string> arr;
+		while(getline(ss, str, ',')) arr.push_back(str);
+		
+		int dot1 = stoi(arr[0]);
+		int dot2 = stoi(arr[1]);
+		int dis = stoi(arr[2]);
+		
+		e[dot1].push_back({dot2, dis});
+		e[dot2].push_back({dot1, dis});
+	}
+	
+	cout << "请依次输入10个点" << endl;
+	vector<int> v(10, 0);
+	
+	for(int i = 0; i < 10; i++) {
+		cin >> v[i];
+	}  //得到了这10个点
+	for(int i = 0; i < SIZE; i++) {
+		color[i] = 0;
+	}
+	
+ 	for(int i = 0; i < 10; i++) {
+		vector<edge> row = e[v[i]];
+		int n = row.size();
+	
+		for(int k = 0; k < n; k++) {
+			for(int j = i+1; j < 10; j++) {
+				if(v[j] == row[k].v) {
+					G[v[i]].push_back(v[j]);
+            		G[v[j]].push_back(v[i]);
+				} 
+			}
+		}
+	}
+	
+	bool ret = solve(v);
+	
+	if(!ret) {
+		cout << "不能构成二部图！" << endl;
+	} else {
+		vector<int> arr1, arr2;
+		cout << "可以构成二部图！" << endl;
+		for(int i = 0; i < 10; i++) {
+			int num = v[i];
+			if(color[num] == 1)       arr1.push_back(num);
+			else if(color[num] == -1) arr2.push_back(num);
+		}
+		showBestStocks(arr1, arr2);
+	}
+	system("pause");
+}
+void showBestStocks(vector<int> arr1, vector<int> arr2) {
+	int num1 = arr1.size();
+	int num2 = arr2.size();
+	
+	cout << "第一组股票为:" << endl;
+	for(int i = 0; i < num1; i++) {
+		cout << arr1[i] << "-----" << scores[arr1[i]].name << endl;
+	}
+	cout << endl;
+	cout << "第二组股票为:" << endl;
+	for(int i = 0; i < num2; i++) {
+		cout << arr2[i] << "-----" << scores[arr2[i]].name << endl;
+	}
 }
 // 删除二叉排序树节点功能入口
 void deleteBSTNode() {
