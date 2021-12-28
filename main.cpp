@@ -1,16 +1,5 @@
 #include "general.h"
 
-vector<hashList> hashTable(HASHLENGTH);  //定义哈希表
-vector<StockInfo> stocks(200);           //存储200支股票的基本信息和具体股票信息
-vector<vector<edge>> e;                  //邻接表 
-vector<int> d;                           //外部点到内部点的最短距离 
-vector<int> vis;                         //标记数组
-vector<fundPortfolio> ret;               //最小生成树当中的基金组合
-vector<score> scores;                    //评分和名字
-vector<int> p;                           //并查集数组 
-vector<int> G[SIZE];                     //图
-int color[SIZE];                         //顶点i的颜色 1 或 -1
-
 int main()
 {
 	readStockInfo();   //读文件，保存数据 
@@ -37,7 +26,8 @@ int main()
 			cout << "欢迎下次使用！退出中...." << endl;
 			exit(0);
 		}
-	}
+	}	
+	
 	return 0;
 }
 
@@ -69,7 +59,8 @@ double hashASL(vector<StockInfo> info, vector<hashList> list) {
 			counter++;
 		}
 	}
-	return counter/SIZE;
+	
+	return counter / SIZE;
 }
 double bstASL(BinTree T, vector<StockInfo> info) {
 	int num = info.size();
@@ -81,16 +72,6 @@ double bstASL(BinTree T, vector<StockInfo> info) {
 	}
 	
 	return counter / num;
-}
-int encode(string str) {
-	int length = str.length();
-	int sum = 0;
-	
-	for(int i = 0; i < length; i++) {
-		sum += str[i];
-	}
-	
-	return sum;
 }
 bool kmp(string s, string t) {
 	int m = t.length();
@@ -128,16 +109,7 @@ bool kmp(string s, string t) {
 
         else return true;
 }
-string format(int number) {
-	string ret;
-	if(number < 10) {
-		ret = "0" + to_string(number);
-	} else {
-		ret = to_string(number);
-	}
-	
-	return ret;
-}
+
 bool cmp(const fundPortfolio t1, const fundPortfolio t2) {
 	if(t1.weight < t2.weight) return true;
 	return false;
@@ -239,7 +211,7 @@ void showAnalyseMenu() {
 }
 
 // 功能实现 
-// 录入股票基本信息 
+// 从文件中读取股票信息 
 void readStockInfo() {
  	ifstream in("股票基本信息数据/A股公司简介.csv");   //读取文件, 定义文件流 
  	string row;
@@ -257,7 +229,7 @@ void readStockInfo() {
 	 string str;  //相当于一个中间缓存
 	 vector<string> lineArray;
 	 
-	 while(getline(ss, str, ',')) lineArray.push_back(str);
+	 while(getline(ss, str, ','))    lineArray.push_back(str);
 	 
 	 stocks[i].stockCode = lineArray[0];
 	 stocks[i].shortName = lineArray[1];
@@ -266,7 +238,6 @@ void readStockInfo() {
 	 stocks[i].date = lineArray[7];
 	 stocks[i].website = lineArray[12];
 	 stocks[i].majorBusiness = lineArray[15];
-	 stocks[i].businessScope = lineArray[16];
 	 
 	 fullPath = path1 + lineArray[0] + path2;  //完整文件路径
 	 ifstream fp(fullPath);
@@ -279,9 +250,9 @@ void readStockInfo() {
 	 istringstream s(line);
 	 while(getline(s, str, ' '))  arr.push_back(str);
 	 
-	 stocks[i].recentInfo[0] = arr[1];
-	 stocks[i].recentInfo[1] = arr[2];
-	 stocks[i].recentInfo[2] = arr[8];
+	 stocks[i].recentInfo[0] = arr[1];  //开盘价 
+	 stocks[i].recentInfo[1] = arr[2];  //收盘价 
+	 stocks[i].recentInfo[2] = arr[9];  //涨跌幅 
 	 
 	 stocks[i].detail = new changeData;
 	 dataLink head = stocks[i].detail;
@@ -313,7 +284,7 @@ void readStockInfo() {
 	
 	for(int i = 0; i < 200; i++) {
 		stocks[i].score = 0;
-	}
+	}   //没有评分的设置为0 
 	
 	ifstream infile("股票基本信息数据/60支股票信息2.csv");
 	string scope;
@@ -322,7 +293,7 @@ void readStockInfo() {
 	getline(infile, scope);   //跳过前两行 
 	
 	score scoreNode;
-	scores.push_back(scoreNode);  // 目的是让下标从1开始 
+	scores.push_back(scoreNode);  //目的是让下标从1开始 
 		
 	while(getline(infile, scope)) {
 		stringstream ss(scope);
@@ -349,6 +320,7 @@ void readStockInfo() {
 		dataLink head = stocks[i].detail;
 		double maxChangePercent = head->changePercent;
 		string date;
+		
 		while(head) {
 			if(maxChangePercent < head->changePercent) {
 				maxChangePercent = head->changePercent;
@@ -361,7 +333,7 @@ void readStockInfo() {
 	}
 }
 // 创建哈希表 
-void createHashTable() {
+void createHashTable(vector<hashList>& hashTable) {
 	//初始化哈希表
 	for(int i = 0; i < HASHLENGTH; i++) {
 		hashTable[i] = new hashNode;  //这里记得new  成功！！！！！ 
@@ -382,7 +354,6 @@ void createHashTable() {
 			insertNode->node.date = stocks[i].date;
 			insertNode->node.website = stocks[i].website;
 			insertNode->node.majorBusiness = stocks[i].majorBusiness;
-			insertNode->node.businessScope = stocks[i].businessScope;
 			insertNode->next = NULL;
 			
 			hashTable[index]->next = insertNode;
@@ -399,7 +370,6 @@ void createHashTable() {
 			insertNode->node.date = stocks[i].date;
 			insertNode->node.website = stocks[i].website;
 			insertNode->node.majorBusiness = stocks[i].majorBusiness;
-			insertNode->node.businessScope = stocks[i].businessScope;
 			
 			insertNode->next = head;
 			hashTable[index]->next = insertNode;
@@ -408,7 +378,8 @@ void createHashTable() {
 }
 // 哈希查找基本信息
 void searchBaseInfo() {
-	createHashTable();
+	vector<hashList> hashTable(HASHLENGTH);  //定义哈希表
+	createHashTable(hashTable);
 	
 	string number;
 	int flag1 = 1;
@@ -430,13 +401,13 @@ void searchBaseInfo() {
 					cout << "股票代码：" << stockNode->node.stockCode << endl;
 					cout << "一级行业：" << stockNode->node.cate1 << endl;
 					cout << "二级行业：" << stockNode->node.cate2 << endl;
-					cout << "主营业务：" << stockNode->node.majorBusiness << endl;
+					cout << "主营业务：" << stockNode->node.majorBusiness << endl << endl;
 					flag1 = 0;
 					break;
 				}
 				stockNode = stockNode->next;
 			}
-			if(!flag1) cout << "查找成功的ASL为：" << hashASL(stocks, hashTable) << endl;
+			if(!flag1) cout << "查找成功的ASL为：" << hashASL(stocks, hashTable) << endl << endl;
 			else cout << "不存在该股票，请重新输入" << endl;
 		}
 		
@@ -515,11 +486,11 @@ void searchByBST() {
 		if(!node) {    //返回为空 
 			cout << "查询失败，不存在该股票！" << endl;
 		} else {
-			cout << "最近一日股票信息如下：" << endl; 
+			cout << "最近一日股票信息如下：" << endl << endl; 
 			cout << "开盘价 " << node->data.recentInfo[0] << endl;
 			cout << "收盘价 " << node->data.recentInfo[1] << endl;
-			cout << "涨跌幅 " << node->data.recentInfo[2] << endl;
-			cout << "查找成功的ASL为" << bstASL(T, stocks) << endl;
+			cout << "涨跌幅 " << node->data.recentInfo[2] << endl << endl;
+			cout << "查找成功的ASL为" << bstASL(T, stocks) << endl << endl;
 		}
 		
 		int isBreak = 0;
@@ -590,6 +561,7 @@ void searchByLinkList() {
 		
 		else {
 			link = link->next;
+			
 			printf("%-10s%-10s%-10s%-10s%-10s\n", "股票代码", "股票名称", "开盘价", "收盘价", "涨跌幅");
 			
 			while(link) {
@@ -635,6 +607,7 @@ dataLink getLinkByDate(string date) {
 				node->openingPrice = head->openingPrice;
 				node->closingPrice = head->closingPrice;
 				node->changePercent = head->changePercent;
+				node->next = NULL; 
 				p->next = node;
 				p = p->next;
 				break;
@@ -1046,7 +1019,7 @@ void analyseByPrim() {
 		
 		vector<string> arr;
 		while(getline(ss, str, ',')) arr.push_back(str);
-		//字符串转整数 https://chinese.freecodecamp.org/news/string-to-int-in-c-how-to-convert-a-string-to-an-integer-example/
+		
 		int dot1 = stoi(arr[0]);
 		int dot2 = stoi(arr[1]);
 		int dis = stoi(arr[2]);
@@ -1236,6 +1209,7 @@ void analyseByBigraph() {
 	for(int i = 0; i < 10; i++) {
 		cin >> v[i];
 	}  //得到了这10个点
+	
 	for(int i = 0; i < SIZE; i++) {
 		color[i] = 0;
 	}
@@ -1370,17 +1344,6 @@ void printResult(BinTree node) {
 	
 	else cout << "不存在右孩子" << endl << endl;
 }
-
-
-
-
-
-
-
-
-
-
-
 
 
 

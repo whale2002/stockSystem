@@ -14,6 +14,16 @@ using namespace std;
 #define SIZE 200
 #define HASHLENGTH 97
 
+vector<StockInfo> stocks(200);           //存储200支股票的基本信息和具体股票信息
+vector<vector<edge>> e;                  //邻接表 
+vector<int> d;                           //外部点到内部点的最短距离 
+vector<int> vis;                         //标记数组
+vector<fundPortfolio> ret;               //最小生成树当中的基金组合
+vector<score> scores;                    //评分和名字
+vector<int> p;                           //并查集数组 
+vector<int> G[SIZE];                     //图
+int color[SIZE];                         //顶点i的颜色 1 或 -1
+
 // 工具函数 
 int hashFun(string str);       //哈希函数
 double hashASL(vector<StockInfo>, vector<hashList>); //求哈希表ASL 

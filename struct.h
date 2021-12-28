@@ -20,8 +20,7 @@ typedef struct {
 	string cate2;		   //二级门类 
 	string date;      	   //上市日期 
 	string website;        //网址 
-	string majorBusiness;  //主营业务 
-	string businessScope;  //经营范围
+	string majorBusiness;  //主营业务
 	string recentInfo[3];  //最近一日开盘价、收盘价和跌涨幅
 	dataLink detail;       //股票涨跌数据，首元结点
 	double score;          //评分
