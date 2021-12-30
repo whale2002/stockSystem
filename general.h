@@ -18,6 +18,7 @@ vector<StockInfo> stocks(200);           //存储200支股票的基本信息和具体股票信息
 vector<vector<edge>> e;                  //邻接表 
 vector<int> d;                           //外部点到内部点的最短距离 
 vector<int> vis;                         //标记数组
+vector<vector<int>> graph(N+1, vector<int>(N+1, 0)); //60只股票邻接矩阵 
 vector<fundPortfolio> ret;               //最小生成树当中的基金组合
 vector<score> scores;                    //评分和名字
 vector<int> p;                           //并查集数组 

@@ -113,7 +113,7 @@ bool kmp(string s, string t) {
 bool cmp(const fundPortfolio t1, const fundPortfolio t2) {
 	if(t1.weight < t2.weight) return true;
 	return false;
-} 
+}
 bool cmpByScores(const fundPortfolio t1, const fundPortfolio t2) {
 	if(t1.scoreSum > t2.scoreSum) return true;
 	return false;
@@ -941,8 +941,7 @@ void analyseBySelectionSort() {
 	}	
 }
 // 基于Floyd的股票相关性计算
-void analyseByFloyd() {	
-	vector<vector<int>> graph(N+1, vector<int>(N+1, 0)); //60只股票邻接矩阵 
+void analyseByFloyd() {
 	for(int i = 1; i <= N; i++)
 		for(int j = 1; j <= N; j++) {
 			graph[i][j] = INF;   //无穷
@@ -1007,39 +1006,23 @@ void analyseByFloyd() {
 void analyseByPrim() {
 	vis.assign(N+1, false);
 	d.assign(N+1, INF);
-	e.resize(N+1);
 	
-	ifstream in("股票基本信息数据/60支股票信息1.csv");
-	string row;
-	getline(in, row);
-	
-	while(getline(in, row)) {
-		stringstream ss(row);
-		string str;
-		
-		vector<string> arr;
-		while(getline(ss, str, ',')) arr.push_back(str);
-		
-		int dot1 = stoi(arr[0]);
-		int dot2 = stoi(arr[1]);
-		int dis = stoi(arr[2]);
-		
-		e[dot1].push_back({dot2, dis});
-		e[dot2].push_back({dot1, dis});
-	}
 	MST();   //这时最小生成树已经生成了
+	
+	cout << "长度" << ret.size() << endl;
 	
 	sort(ret.begin(), ret.end(), cmp);
 	int num = ret.size();
 	
 	cout << "边的权值：" << ret[1].weight << " 边的结点1：" <<  scores[ret[1].fund1].name << " 边的结点2：" << scores[ret[1].fund2].name << endl;
 
-	vector<fundPortfolio> arr; //权值为2的 
+	vector<fundPortfolio> arr; //权值为2的
 	for(int i = 0; i <= num; i++) {
 		if(ret[i].weight == 2) arr.push_back(ret[i]);
 	}
 	
 	int n = arr.size();
+	cout << "权值为2" << n << endl;
 	for(int i = 0; i < n; i++) {
 		arr[i].scoreSum = scores[arr[i].fund1].score + scores[arr[i].fund2].score;
 	}
@@ -1071,20 +1054,19 @@ void MST() {
 		
 		for(int k = 1; k <= N; k++) {
 			if(vis[k]) {
-				int n = e[k].size();
-				for(int j = 0; j < n; j++) {
-					if(e[k][j].w == min && e[k][j].v == fund2) fund1 = k;
+				for(int j = 1; j <= N; j++) {
+					if(j == fund2 && graph[k][j] == min) fund1 = k;
 				}
 			}
 		}
 		
-		vis[fund2] = 1;
-		
-		for(const edge& item : e[fund2]) {
-			int v = item.v, w = item.w;
-			d[v] = d[v] < w ? d[v] : w;
+		vis[fund2] = true;
+
+		for(int k = 1; k <= N; k++) {
+			int w = graph[fund2][k];
+			d[k] = d[k] < w ? d[k] : w;
 		}
-		
+			
 		struct fundPortfolio funds;
 		funds.fund1 = fund1;
 		funds.fund2 = fund2;
