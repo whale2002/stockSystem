@@ -16,7 +16,7 @@
 
 ![](https://gitee.com/bjfuchin/mypic/raw/master/pic/20220122220833.png)
 
-##参考资料
+## 参考资料
 
 [数据结构-李冬梅](https://book.douban.com/subject/26713328/)
 
