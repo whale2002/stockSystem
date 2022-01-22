@@ -1,26 +1,19 @@
+# 股票管理与分析系统
 
+这是 BJFU 大二上学期数据结构课程设计。
 
-200条股票信息和哈希表下标都是从0开始的
+由于本人那段事件刚找到实习需要入职的原因，无奈用1/2的时间写了这个不太完美的课程设计，算法层面基本功能已实现，但是没有完成GUI图形化的功能。
 
-stocks[i].detail 第一个就是实际节点
-
-hashTable[i].next 才是第一个真实节点
-
-
-
-二叉排序树
-
- https://www.cnblogs.com/linfangnan/p/12958068.html
-
-直接插入排序
-
-https://blog.csdn.net/vv_017/article/details/80502837
+希望对你帮助~！🍉
 
 
 
-https://blog.csdn.net/sinat_40872274/article/details/81367815
+参考资料：
 
-字符串转整数
+[数据结构-李冬梅](https://book.douban.com/subject/26713328/)
 
-https://chinese.freecodecamp.org/news/string-to-int-in-c-how-to-convert-a-string-to-an-integer-example/
+[二叉排序树](https://www.cnblogs.com/linfangnan/p/12958068.html)
 
+[C++中字符串转整数](https://chinese.freecodecamp.org/news/string-to-int-in-c-how-to-convert-a-string-to-an-integer-example/)
+
+只记得这么多了  🎉
